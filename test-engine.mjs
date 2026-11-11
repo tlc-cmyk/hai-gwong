@@ -19,11 +19,11 @@ test("title is 今日訓導檢查手機櫃", () => {
   assert.equal(E.TITLE, "今日訓導檢查手機櫃");
 });
 
-test("four forms of 15×8 = 120 lockers each", () => {
+test("four forms of 10×12 = 120 lockers each", () => {
   assert.equal(E.FORMS, 4);
   assert.deepEqual(E.FORM_NAMES, ["中一", "中二", "中三", "中四"]);
-  assert.equal(E.COLS, 15);
-  assert.equal(E.ROWS, 8);
+  assert.equal(E.COLS, 10);
+  assert.equal(E.ROWS, 12);
   assert.equal(E.LOCKER_COUNT, 120);
   assert.equal(E.TOTAL_LOCKERS, 480);
   assert.equal(E.EMPTY_PER_FORM, 4);

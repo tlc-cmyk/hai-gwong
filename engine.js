@@ -14,8 +14,8 @@
   var TITLE = "今日訓導檢查手機櫃";
   var FORMS = 4;
   var FORM_NAMES = ["中一", "中二", "中三", "中四"];
-  var COLS = 15;
-  var ROWS = 8;
+  var COLS = 10;
+  var ROWS = 12;
   var LOCKER_COUNT = COLS * ROWS;
   var TOTAL_LOCKERS = LOCKER_COUNT * FORMS;
   var EMPTY_PER_FORM = 4;
@@ -170,19 +170,19 @@
   /**
    * 由畫布尺寸計儲物櫃格位。header 同地板高度由呼叫端預留。
    * play: { x, y, w, h }
-   * 15×8 格，配合橫向 16:9 走廊。
+   * 10×12 格，配合直立手機畫面；櫃門略高。
    */
   function layoutGrid(play) {
-    var area = play || { x: 0, y: 0, w: 640, h: 360 };
-    var gutterX = Math.max(1, Math.min(3, area.w * 0.005));
-    var gutterY = Math.max(1, Math.min(3, area.h * 0.006));
+    var area = play || { x: 0, y: 0, w: 360, h: 640 };
+    var gutterX = Math.max(1, Math.min(3, area.w * 0.006));
+    var gutterY = Math.max(1, Math.min(3, area.h * 0.004));
     var maxW = (area.w - gutterX * (COLS + 1)) / COLS;
     var maxH = (area.h - gutterY * (ROWS + 1)) / ROWS;
     var cellW = maxW;
     var cellH = maxH;
-    // 櫃門接近方形至略高，令 15×8 喺 16:9 走廊入面填得舒服。
-    if (cellH < cellW * 0.82) cellW = cellH / 0.9;
-    if (cellH > cellW * 1.45) cellH = cellW * 1.28;
+    // 櫃門略高，配合直立 10×12。
+    if (cellH < cellW * 1.05) cellH = Math.min(maxH, cellW * 1.2);
+    if (cellH > cellW * 1.7) cellH = cellW * 1.5;
     if (cellW < 8) cellW = Math.max(6, maxW);
     if (cellH < 8) cellH = Math.max(6, maxH);
     var gridW = cellW * COLS + gutterX * (COLS + 1);
@@ -195,10 +195,11 @@
       var row = (i / COLS) | 0;
       var x = originX + gutterX + col * (cellW + gutterX);
       var y = originY + gutterY + row * (cellH + gutterY);
-      var slitW = Math.max(6, cellW * 0.22);
-      var slitH = cellH * 0.56;
-      var slitX = x + cellW * 0.56 - slitW / 2;
-      var slitY = y + cellH * 0.28;
+      // 罅隙夠闊，照進去可以清楚見到打橫擺嘅電話。
+      var slitW = Math.max(10, cellW * 0.62);
+      var slitH = Math.max(8, cellH * 0.4);
+      var slitX = x + (cellW - slitW) / 2;
+      var slitY = y + cellH * 0.3;
       lockers.push({
         id: i,
         number: i + 1,

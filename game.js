@@ -1,7 +1,7 @@
 /**
  * 今日訓導檢查手機櫃 — 畫面、操作同遊戲循環。
  * 美術為原創扁平描邊校園風，並非複製其他遊戲嘅角色或場景。
- * 以手機橫向為主；直立時會提示「請將手機橫過來玩」，並以橫向舞台入畫。
+ * 以手機直立為主；橫置時會提示「請將裝置直立」。櫃裏面嘅電話打橫擺。
  */
 (function () {
   "use strict";
@@ -104,52 +104,29 @@
   }
 
   function computeStage() {
-    var portrait = screenH > screenW + 1;
-    var banner = portrait ? Math.max(40, Math.min(58, screenH * 0.09) + safe.top) : 0;
-    if (!portrait) {
-      stage = { x: 0, y: 0, w: screenW, h: screenH, portrait: false, banner: 0 };
-      return;
-    }
-    var availW = screenW;
-    var availH = Math.max(80, screenH - banner);
-    var aspect = 16 / 9;
-    var w, h;
-    if (availW / availH > aspect) {
-      h = availH;
-      w = h * aspect;
-    } else {
-      w = availW;
-      h = w / aspect;
-    }
-    stage = {
-      x: (screenW - w) / 2,
-      y: banner + (availH - h) / 2,
-      w: w,
-      h: h,
-      portrait: true,
-      banner: banner,
-    };
+    var portrait = screenH >= screenW;
+    stage = { x: 0, y: 0, w: screenW, h: screenH, portrait: portrait, banner: 0 };
   }
 
   function headerHeight() {
-    return Math.max(36, Math.min(56, viewH * 0.11));
+    return Math.max(36, Math.min(56, viewH * 0.08));
   }
 
   function navHeight() {
-    return Math.max(36, Math.min(48, viewH * 0.1)) + (stage.portrait ? 0 : safe.bottom);
+    return Math.max(36, Math.min(52, viewH * 0.08)) + safe.bottom;
   }
 
   function hudOffset() {
-    return (stage.portrait ? 6 : safe.top) + 36;
+    return safe.top + 36;
   }
 
   function layoutPlayfield() {
     var top = hudOffset() + 2;
     if (screen === "title") {
-      top = (stage.portrait ? 8 : safe.top) + Math.max(72, viewH * 0.28);
+      top = safe.top + Math.max(72, viewH * 0.22);
     }
     var head = screen === "title" ? 0 : headerHeight();
-    var nav = screen === "title" ? Math.max(24, viewH * 0.06) : navHeight();
+    var nav = screen === "title" ? Math.max(24, viewH * 0.05) : navHeight();
     var y = top + head;
     var h = viewH - y - nav;
     if (h < 90) {
@@ -157,7 +134,7 @@
       y = top + head;
       h = viewH - y - Math.max(28, nav * 0.75);
     }
-    var padX = Math.max(8, (stage.portrait ? 8 : Math.max(safe.left, safe.right)), viewW * 0.02);
+    var padX = Math.max(8, Math.max(safe.left, safe.right), viewW * 0.03);
     eng.setPlayfield({
       x: padX,
       y: y,
@@ -167,23 +144,19 @@
   }
 
   function layoutChrome() {
-    var left = stage.x + (stage.portrait ? 0 : safe.left);
-    var right = screenW - (stage.x + stage.w) + (stage.portrait ? 0 : safe.right);
-    var top = stage.y + (stage.portrait ? 4 : 0);
-    hud.style.left = left + "px";
-    hud.style.right = right + "px";
-    hud.style.top = top + "px";
-    hud.style.paddingTop = (stage.portrait ? 4 : (6 + safe.top)) + "px";
+    hud.style.left = safe.left + "px";
+    hud.style.right = safe.right + "px";
+    hud.style.top = "0px";
+    hud.style.paddingTop = (6 + safe.top) + "px";
 
-    var bottom = screenH - (stage.y + stage.h);
-    pageNav.style.left = left + "px";
-    pageNav.style.right = right + "px";
-    pageNav.style.bottom = Math.max(0, bottom) + "px";
-    pageNav.style.paddingBottom = ((stage.portrait ? 6 : 8) + (stage.portrait ? 0 : safe.bottom)) + "px";
+    pageNav.style.left = safe.left + "px";
+    pageNav.style.right = safe.right + "px";
+    pageNav.style.bottom = "0px";
+    pageNav.style.paddingBottom = (8 + safe.bottom) + "px";
   }
 
   function updateRotateHint() {
-    rotateHint.classList.toggle("hidden", !stage.portrait);
+    rotateHint.classList.toggle("hidden", stage.portrait);
   }
 
   function formatTime(sec) {
@@ -486,23 +459,33 @@
   }
 
   function drawPhone(slit) {
-    var pw = Math.max(5, slit.w * 0.7);
-    var ph = Math.max(8, slit.h * 0.55);
+    // 電話打橫擺：闊過高，瞓喺櫃內層架上。
+    var pw = Math.max(9, Math.min(slit.w * 0.88, slit.h * 1.85));
+    var ph = Math.max(4.5, pw * 0.48);
+    if (ph > slit.h * 0.72) {
+      ph = slit.h * 0.72;
+      pw = ph / 0.48;
+    }
     var px = slit.x + slit.w / 2 - pw / 2;
-    var py = slit.y + slit.h * 0.28;
-    roundRect(px, py, pw, ph, Math.max(1, pw * 0.16));
+    var py = slit.y + slit.h * 0.52 - ph / 2;
+    var pr = Math.max(1, ph * 0.22);
+    roundRect(px, py, pw, ph, pr);
     ctx.fillStyle = "#2a3038";
     ctx.fill();
     ctx.strokeStyle = "#111";
     ctx.lineWidth = 0.7;
     ctx.stroke();
-    var sw = pw * 0.7;
-    var sh = ph * 0.55;
-    roundRect(px + (pw - sw) / 2, py + ph * 0.16, sw, sh, 0.6);
+    var sw = pw * 0.72;
+    var sh = ph * 0.62;
+    roundRect(px + pw * 0.16, py + (ph - sh) / 2, sw, sh, Math.max(0.5, pr * 0.45));
     ctx.fillStyle = "#dce8c8";
     ctx.fill();
+    // 聽筒／鏡頭喺左邊短邊，顯示呢支機係打橫放。
     ctx.fillStyle = "#1a1a1a";
-    ctx.fillRect(px + pw * 0.35, py + ph * 0.08, pw * 0.3, Math.max(0.7, ph * 0.04));
+    ctx.fillRect(px + pw * 0.05, py + ph * 0.32, Math.max(0.8, pw * 0.045), ph * 0.36);
+    ctx.beginPath();
+    ctx.arc(px + pw * 0.93, py + ph / 2, Math.max(0.6, ph * 0.09), 0, Math.PI * 2);
+    ctx.fill();
   }
 
   function drawLocker(geo, locker, mode) {
@@ -851,24 +834,6 @@
   function drawLetterbox() {
     ctx.fillStyle = cream;
     ctx.fillRect(0, 0, screenW, screenH);
-    if (stage.portrait) {
-      if (stage.banner > 0) {
-        ctx.fillStyle = cream;
-        ctx.fillRect(0, 0, screenW, stage.banner);
-        ctx.strokeStyle = ink;
-        ctx.lineWidth = 1.5;
-        ctx.beginPath();
-        ctx.moveTo(0, stage.banner);
-        ctx.lineTo(screenW, stage.banner);
-        ctx.stroke();
-      }
-      // dim bars around the landscape stage
-      ctx.fillStyle = "#e4d8be";
-      if (stage.x > 0) {
-        ctx.fillRect(0, stage.y, stage.x, stage.h);
-        ctx.fillRect(stage.x + stage.w, stage.y, screenW - (stage.x + stage.w), stage.h);
-      }
-    }
   }
 
   function render() {

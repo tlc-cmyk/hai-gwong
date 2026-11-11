@@ -15,7 +15,7 @@
   var FORMS = 4;
   var FORM_NAMES = ["中一", "中二", "中三", "中四"];
   var COLS = 10;
-  var ROWS = 12;
+  var ROWS = 16;
   var LOCKER_COUNT = COLS * ROWS;
   var TOTAL_LOCKERS = LOCKER_COUNT * FORMS;
   var EMPTY_PER_FORM = 4;
@@ -24,7 +24,7 @@
   var PHASE2_SECONDS = 15;
   var POINTS_HIT = 100;
   var POINTS_FALSE = 25;
-  var BEST_KEY = "hai-gwong-best-v2";
+  var BEST_KEY = "hai-gwong-best-v3";
 
   var GRADES = {
     perfect: "火眼金睛",
@@ -60,10 +60,40 @@
     return form * LOCKER_COUNT + localId;
   }
 
-  function lockerLabel(id) {
-    var form = formOf(id);
+  var LOCKER_LETTERS = "ABCD";
+  var LOCKERS_PER_LETTER = 40;
+
+  function pad2(n) {
+    return n < 10 ? "0" + n : String(n);
+  }
+
+  /**
+   * 櫃號：年級數字 + 組別字母 + 兩位序號，例如 1A01、2C17、4D40。
+   * 由頂上開始，每 4 行一組（A–D），每組 40 格，由左至右、由上至下。
+   */
+  function lockerCode(form, localId) {
+    var formNo = (form | 0) + 1;
+    var group = (localId / LOCKERS_PER_LETTER) | 0;
+    var letter = LOCKER_LETTERS.charAt(group) || "A";
+    var n = (localId % LOCKERS_PER_LETTER) + 1;
+    return String(formNo) + letter + pad2(n);
+  }
+
+  /**
+   * 結果用標籤。lockerLabel(globalId) 或 lockerLabel(formIndex, lockerIndex)
+   * 都會回傳「中二 2B17」呢類字串。
+   */
+  function lockerLabel(formOrId, localId) {
+    var form, local;
+    if (arguments.length >= 2) {
+      form = formOrId;
+      local = localId;
+    } else {
+      form = formOf(formOrId);
+      local = localOf(formOrId);
+    }
     var name = FORM_NAMES[form] || ("年級" + (form + 1));
-    return name + " 第 " + (localOf(id) + 1) + " 格";
+    return name + " " + lockerCode(form, local);
   }
 
   function mulberry32(a) {
@@ -109,7 +139,7 @@
   }
 
   /**
-   * 每個年級 120 個互異、低飽和、非霓虹嘅櫃門顏色，方便喺電筒光下分辨。
+   * 每個年級 160 個互異、低飽和、非霓虹嘅櫃門顏色，方便喺電筒光下分辨。
    */
   function buildPalette(form) {
     var formIndex = form == null ? 0 : form;
@@ -170,7 +200,7 @@
   /**
    * 由畫布尺寸計儲物櫃格位。header 同地板高度由呼叫端預留。
    * play: { x, y, w, h }
-   * 10×12 格，配合直立手機畫面；櫃門略高。
+   * 10×16 格，配合直立手機畫面；由頂上起 A–D 各 40 格。
    */
   function layoutGrid(play) {
     var area = play || { x: 0, y: 0, w: 360, h: 640 };
@@ -180,7 +210,7 @@
     var maxH = (area.h - gutterY * (ROWS + 1)) / ROWS;
     var cellW = maxW;
     var cellH = maxH;
-    // 櫃門略高，配合直立 10×12。
+    // 櫃門盡量用滿可用高度；16 行時格會略扁。
     if (cellH < cellW * 1.05) cellH = Math.min(maxH, cellW * 1.2);
     if (cellH > cellW * 1.7) cellH = cellW * 1.5;
     if (cellW < 8) cellW = Math.max(6, maxW);
@@ -195,14 +225,16 @@
       var row = (i / COLS) | 0;
       var x = originX + gutterX + col * (cellW + gutterX);
       var y = originY + gutterY + row * (cellH + gutterY);
-      // 罅隙夠闊，照進去可以清楚見到打橫擺嘅電話。
-      var slitW = Math.max(10, cellW * 0.62);
-      var slitH = Math.max(8, cellH * 0.4);
+      // 罅隙夠闊，薄身打橫電話照進去仍然清楚。
+      var slitW = Math.max(12, cellW * 0.76);
+      var slitH = Math.max(9, Math.min(cellH * 0.48, cellH - 11));
       var slitX = x + (cellW - slitW) / 2;
-      var slitY = y + cellH * 0.3;
+      var slitY = y + Math.max(cellH * 0.28, 8);
+      if (slitY + slitH > y + cellH - 2) slitY = y + cellH - 2 - slitH;
       lockers.push({
         id: i,
         number: i + 1,
+        code: lockerCode(0, i),
         col: col,
         row: row,
         x: x,
@@ -274,6 +306,7 @@
           form: f,
           localId: i,
           number: i + 1,
+          code: lockerCode(f, i),
           col: i % COLS,
           row: (i / COLS) | 0,
           color: palette[i],
@@ -497,7 +530,7 @@
     var geo = this.layout.lockers[localOf(id)];
     if (!circleHitsSlit(this.beam, geo)) return null;
     var locker = this.round.lockers[id];
-    return { hasPhone: !!locker.hasPhone, number: locker.number, form: locker.form };
+    return { hasPhone: !!locker.hasPhone, number: locker.number, code: locker.code, form: locker.form };
   };
 
   GameEngine.prototype.hitTest = function (x, y) {
@@ -607,6 +640,7 @@
     formOf: formOf,
     localOf: localOf,
     globalId: globalId,
+    lockerCode: lockerCode,
     lockerLabel: lockerLabel,
     mulberry32: mulberry32,
     hslToHex: hslToHex,

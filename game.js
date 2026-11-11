@@ -459,32 +459,36 @@
   }
 
   function drawPhone(slit) {
-    // 電話打橫擺：闊過高，瞓喺櫃內層架上。
-    var pw = Math.max(9, Math.min(slit.w * 0.88, slit.h * 1.85));
-    var ph = Math.max(4.5, pw * 0.48);
-    if (ph > slit.h * 0.72) {
-      ph = slit.h * 0.72;
-      pw = ph / 0.48;
+    // 電話打橫擺：闊過高，機身再薄，好似瘦身手機瞓喺層架上。
+    var pw = Math.max(10, Math.min(slit.w * 0.92, slit.h * 2.8));
+    var ph = Math.max(3.2, pw * 0.30);
+    if (ph > slit.h * 0.55) {
+      ph = slit.h * 0.55;
+      pw = ph / 0.30;
+    }
+    if (pw > slit.w * 0.94) {
+      pw = slit.w * 0.94;
+      ph = Math.min(ph, pw * 0.30);
     }
     var px = slit.x + slit.w / 2 - pw / 2;
     var py = slit.y + slit.h * 0.52 - ph / 2;
-    var pr = Math.max(1, ph * 0.22);
+    var pr = Math.max(0.8, ph * 0.22);
     roundRect(px, py, pw, ph, pr);
     ctx.fillStyle = "#2a3038";
     ctx.fill();
     ctx.strokeStyle = "#111";
     ctx.lineWidth = 0.7;
     ctx.stroke();
-    var sw = pw * 0.72;
-    var sh = ph * 0.62;
-    roundRect(px + pw * 0.16, py + (ph - sh) / 2, sw, sh, Math.max(0.5, pr * 0.45));
+    var sw = pw * 0.70;
+    var sh = Math.max(1.6, ph * 0.52);
+    roundRect(px + pw * 0.16, py + (ph - sh) / 2, sw, sh, Math.max(0.4, pr * 0.4));
     ctx.fillStyle = "#dce8c8";
     ctx.fill();
-    // 聽筒／鏡頭喺左邊短邊，顯示呢支機係打橫放。
+    // 聽筒／鏡頭喺短邊，顯示呢支機係打橫放。
     ctx.fillStyle = "#1a1a1a";
-    ctx.fillRect(px + pw * 0.05, py + ph * 0.32, Math.max(0.8, pw * 0.045), ph * 0.36);
+    ctx.fillRect(px + pw * 0.045, py + ph * 0.28, Math.max(0.7, pw * 0.04), Math.max(1.2, ph * 0.44));
     ctx.beginPath();
-    ctx.arc(px + pw * 0.93, py + ph / 2, Math.max(0.6, ph * 0.09), 0, Math.PI * 2);
+    ctx.arc(px + pw * 0.93, py + ph / 2, Math.max(0.5, ph * 0.12), 0, Math.PI * 2);
     ctx.fill();
   }
 
@@ -568,11 +572,12 @@
     var showNum = lit || mode === "dim";
     if (showNum) {
       ctx.fillStyle = lit ? ink : "rgba(247,241,230,0.16)";
-      var fs = Math.max(7, Math.min(11, w * 0.28, h * 0.22));
+      var code = locker.code || E.lockerCode(locker.form, locker.localId);
+      var fs = Math.max(5.5, Math.min(8, w * 0.21, h * 0.2));
       ctx.font = '700 ' + fs + 'px "PingFang HK","PingFang TC","Noto Sans TC",sans-serif';
       ctx.textAlign = "left";
       ctx.textBaseline = "top";
-      ctx.fillText(String(locker.number), x + 2.5, y + 2);
+      ctx.fillText(code, x + 2, y + 1.5);
     }
 
     if (mode === "lit" || mode === "dim") {

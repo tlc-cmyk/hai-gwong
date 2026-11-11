@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+<html lang="zh-Hant-HK">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover" />
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="default" />
+  <meta name="theme-color" content="#f3ead8" />
+  <meta name="description" content="隙光晨檢——電筒照櫃隙，記住冇交機嘅格。中一級 120 個儲物櫃，30 秒檢查，10 秒點選。" />
+  <title>隙光晨檢</title>
+  <link rel="stylesheet" href="style.css?v=20261111a" />
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='14' fill='%23f3ead8'/%3E%3Crect x='10' y='16' width='16' height='22' rx='2' fill='%237a8c6a' stroke='%232c241c' stroke-width='1.5'/%3E%3Crect x='28' y='16' width='16' height='22' rx='2' fill='%23c4a574' stroke='%232c241c' stroke-width='1.5'/%3E%3Crect x='46' y='16' width='8' height='22' rx='2' fill='%238a6a62' stroke='%232c241c' stroke-width='1.5'/%3E%3Crect x='17' y='22' width='2' height='10' fill='%232c241c'/%3E%3Crect x='35' y='22' width='2' height='10' fill='%232c241c'/%3E%3Ccircle cx='24' cy='44' r='14' fill='%23f3e0a8' fill-opacity='0.7' stroke='%23d2b56a' stroke-width='1.2'/%3E%3Crect x='21' y='48' width='6' height='10' rx='2' fill='%233f5c3d' stroke='%232c241c' stroke-width='1.2'/%3E%3C/svg%3E" />
+</head>
+<body>
+  <div id="safe-probe" aria-hidden="true"></div>
+  <div id="app" class="is-title">
+    <canvas id="stage" aria-label="隙光晨檢遊戲畫面"></canvas>
+
+    <div id="hud" class="hud hidden">
+      <button type="button" id="btn-mute-play" class="icon-btn" aria-label="靜音">聲</button>
+      <div id="hud-time" class="hud-chip" aria-live="polite">檢查 0:30</div>
+      <p id="hud-meta" class="hud-meta">已照 0 格</p>
+    </div>
+
+    <section id="screen-title" class="panel panel-title" aria-labelledby="game-title">
+      <div class="brand">
+        <p class="eyebrow">校園值日小遊戲</p>
+        <h1 id="game-title">隙光晨檢</h1>
+        <p class="subtitle">電筒照櫃隙，記住冇交機嘅格</p>
+      </div>
+      <div class="panel-inner">
+        <ul class="howto">
+          <li>中一級共有 <strong>120</strong> 個儲物櫃。同學應該將手提電話放進自己嗰格；冇交機就算違規。</li>
+          <li>限時 <strong>30 秒</strong>，用電筒照每個櫃門嘅一條罅隙，睇睇裏面有冇電話。記住冇電話嘅格號。</li>
+          <li>之後 <strong>10 秒</strong>，點選你記得冇交機嘅儲物櫃。再撳一次可以取消。</li>
+        </ul>
+        <button type="button" id="btn-start" class="btn primary">開始晨檢</button>
+        <button type="button" id="btn-mute-title" class="btn ghost">聲音：開</button>
+      </div>
+    </section>
+
+    <section id="screen-result" class="panel hidden" aria-labelledby="result-title">
+      <div class="panel-inner result-inner">
+        <p class="eyebrow">今次晨檢</p>
+        <h2 id="result-title">評級</h2>
+        <p id="result-grade" class="grade">—</p>
+        <p id="result-score" class="result-score">分數 0</p>
+        <p id="result-counts" class="result-counts"></p>
+        <p id="result-list" class="result-list"></p>
+        <p id="result-best" class="result-best"></p>
+        <p id="result-blurb" class="result-sub"></p>
+        <button type="button" id="btn-retry" class="btn primary">再來一次</button>
+        <button type="button" id="btn-home" class="btn ghost">返回標題</button>
+        <button type="button" id="btn-mute-result" class="btn ghost">聲音：開</button>
+      </div>
+    </section>
+
+    <div id="rotate-hint" class="rotate-hint hidden">請將裝置直立</div>
+  </div>
+
+  <script src="engine.js?v=20261111a"></script>
+  <script src="audio.js?v=20261111a"></script>
+  <script src="game.js?v=20261111a"></script>
+</body>
+</html>

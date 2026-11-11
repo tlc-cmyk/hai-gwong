@@ -1,0 +1,345 @@
+*, *::before, *::after { box-sizing: border-box; }
+
+html, body {
+  margin: 0;
+  padding: 0;
+  width: 100%;
+  height: 100%;
+  height: 100dvh;
+  height: 100svh;
+  overflow: hidden;
+  background: #f3ead8;
+  color: #2c241c;
+  font-family: "PingFang HK", "PingFang TC", "Noto Sans CJK HK", "Noto Sans CJK TC",
+    "Noto Sans TC", "Microsoft JhengHei", "Heiti TC", sans-serif;
+  -webkit-tap-highlight-color: transparent;
+  user-select: none;
+  touch-action: none;
+}
+
+#safe-probe {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 0;
+  height: env(safe-area-inset-top, 0px);
+  pointer-events: none;
+  visibility: hidden;
+}
+
+#app {
+  position: fixed;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  height: 100dvh;
+  height: 100svh;
+  background: #f3ead8;
+}
+
+#stage {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  display: block;
+  touch-action: none;
+  cursor: none;
+}
+
+#app.is-title #stage,
+#app.is-result #stage {
+  cursor: default;
+}
+
+.hud {
+  position: absolute;
+  left: 0;
+  right: 0;
+  top: 0;
+  padding: calc(8px + env(safe-area-inset-top, 0px)) 12px 0;
+  pointer-events: none;
+  z-index: 2;
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 8px;
+}
+
+.icon-btn {
+  pointer-events: auto;
+  appearance: none;
+  border: 1.5px solid #2c241c;
+  background: #f7f1e6;
+  color: #2c241c;
+  border-radius: 999px;
+  min-width: 44px;
+  height: 32px;
+  padding: 0 10px;
+  font: inherit;
+  font-size: 13px;
+  font-weight: 650;
+  cursor: pointer;
+}
+
+.icon-btn:active { transform: translateY(1px); }
+
+.hud-chip {
+  pointer-events: none;
+  min-width: 72px;
+  height: 32px;
+  padding: 0 12px;
+  border-radius: 999px;
+  border: 1.5px solid #2c241c;
+  background: #f7f1e6;
+  color: #2c241c;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 14px;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  font-variant-numeric: tabular-nums;
+}
+
+.hud-chip.urgent {
+  background: #efe0c4;
+  color: #5a3a28;
+}
+
+.hud-meta {
+  margin: 0;
+  padding-top: 6px;
+  text-align: right;
+  font-size: 12px;
+  font-weight: 650;
+  letter-spacing: 0.06em;
+  color: #3f5c3d;
+  text-shadow: 0 0 6px rgba(243, 234, 216, 0.9);
+}
+
+.panel {
+  position: absolute;
+  inset: 0;
+  z-index: 3;
+  display: flex;
+  align-items: flex-end;
+  justify-content: center;
+  padding: 0 18px calc(18px + env(safe-area-inset-bottom, 0px));
+  background: linear-gradient(
+    to top,
+    rgba(243, 234, 216, 0.97) 0%,
+    rgba(243, 234, 216, 0.92) 42%,
+    rgba(243, 234, 216, 0.0) 72%
+  );
+  pointer-events: auto;
+  overflow: auto;
+}
+
+.panel-title {
+  flex-direction: column;
+  justify-content: space-between;
+  align-items: center;
+  background: linear-gradient(
+    to top,
+    rgba(243, 234, 216, 0.98) 0%,
+    rgba(243, 234, 216, 0.94) 30%,
+    rgba(243, 234, 216, 0.0) 52%
+  );
+  padding-top: calc(14px + env(safe-area-inset-top, 0px));
+}
+
+.brand {
+  width: min(420px, 100%);
+  text-align: center;
+  padding-top: 4px;
+}
+
+.panel-inner {
+  width: min(420px, 100%);
+  text-align: center;
+}
+
+.result-inner {
+  width: min(460px, 100%);
+  padding-top: calc(10px + env(safe-area-inset-top, 0px));
+}
+
+.eyebrow {
+  margin: 0 0 6px;
+  letter-spacing: 0.22em;
+  font-size: 11px;
+  color: #3f5c3d;
+  font-weight: 700;
+}
+
+h1, h2 {
+  margin: 0;
+  font-family: "Songti TC", "PMingLiU", "Noto Serif CJK HK", "Noto Serif CJK TC",
+    "Noto Serif TC", "STSong", "Songti SC", serif;
+  font-weight: 700;
+}
+
+h1 {
+  font-size: clamp(40px, 13vw, 62px);
+  letter-spacing: 0.1em;
+  color: #2c241c;
+}
+
+h2 {
+  font-size: 16px;
+  letter-spacing: 0.2em;
+  color: #5a4e40;
+  font-family: inherit;
+  font-weight: 650;
+}
+
+.subtitle {
+  margin: 4px 0 12px;
+  font-size: 16px;
+  color: #4a4034;
+}
+
+.howto {
+  margin: 0 0 16px;
+  padding: 12px 14px;
+  list-style: none;
+  text-align: left;
+  background: rgba(247, 241, 230, 0.9);
+  border: 1.5px solid #2c241c;
+  border-radius: 16px;
+  font-size: 13.5px;
+  line-height: 1.65;
+  color: #2c241c;
+}
+
+.howto li + li { margin-top: 6px; }
+.howto strong { color: #3f5c3d; font-weight: 700; }
+
+.btn {
+  appearance: none;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  min-height: 52px;
+  margin: 0 0 10px;
+  border-radius: 999px;
+  border: 1.5px solid #2c241c;
+  font: inherit;
+  font-size: 18px;
+  font-weight: 700;
+  letter-spacing: 0.14em;
+  cursor: pointer;
+}
+
+.btn.primary {
+  background: #3f5c3d;
+  color: #f7f1e6;
+}
+
+.btn.ghost {
+  background: #f7f1e6;
+  color: #2c241c;
+  font-weight: 650;
+  letter-spacing: 0.08em;
+  min-height: 44px;
+  font-size: 15px;
+}
+
+.btn:active { transform: translateY(1px); }
+
+.grade {
+  margin: 8px 0 4px;
+  font-family: "Songti TC", "PMingLiU", "Noto Serif CJK HK", "Noto Serif CJK TC",
+    "Noto Serif TC", "STSong", serif;
+  font-size: clamp(36px, 11vw, 56px);
+  letter-spacing: 0.14em;
+  color: #3f5c3d;
+}
+
+.result-score {
+  margin: 0 0 6px;
+  font-size: 20px;
+  font-weight: 700;
+  color: #2c241c;
+  font-variant-numeric: tabular-nums;
+}
+
+.result-counts {
+  margin: 0 0 6px;
+  font-size: 14px;
+  font-weight: 650;
+  color: #3f5c3d;
+  letter-spacing: 0.04em;
+  font-variant-numeric: tabular-nums;
+}
+
+.result-list {
+  margin: 0 0 8px;
+  font-size: 12.5px;
+  line-height: 1.55;
+  color: #5a4e40;
+  text-align: left;
+  word-break: break-all;
+}
+
+.result-best {
+  margin: 0 0 8px;
+  font-size: 14px;
+  letter-spacing: 0.08em;
+  color: #5a4e40;
+  font-weight: 650;
+  min-height: 1.2em;
+}
+
+.result-sub {
+  margin: 0 0 16px;
+  font-size: 14px;
+  color: #5a4e40;
+  min-height: 1.2em;
+}
+
+.hidden { display: none !important; }
+
+.rotate-hint {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  z-index: 5;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 36px;
+  padding: calc(6px + env(safe-area-inset-top, 0px)) 12px 6px;
+  background: #f3ead8;
+  border-bottom: 1.5px solid #2c241c;
+  font-size: 16px;
+  letter-spacing: 0.12em;
+  color: #2c241c;
+  pointer-events: none;
+}
+
+@media (orientation: portrait) {
+  .rotate-hint { display: none !important; }
+}
+
+@media (orientation: landscape) {
+  .panel-title {
+    padding-top: calc(42px + env(safe-area-inset-top, 0px));
+    justify-content: flex-end;
+  }
+  .brand { padding-top: 0; }
+  h1 { font-size: clamp(28px, 7vw, 44px); }
+  .subtitle { margin: 2px 0 8px; font-size: 14px; }
+  .howto {
+    font-size: 12px;
+    padding: 8px 12px;
+    margin-bottom: 8px;
+    line-height: 1.5;
+  }
+  .howto li + li { margin-top: 3px; }
+  .btn { min-height: 44px; margin-bottom: 8px; font-size: 16px; }
+  .btn.ghost { min-height: 36px; }
+}

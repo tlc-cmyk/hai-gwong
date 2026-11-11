@@ -1,5 +1,5 @@
 /**
- * 隙光晨檢 — 原創 Web Audio 音效（即時合成，無取樣檔）。
+ * 今日訓導檢查手機櫃 — 原創 Web Audio 音效（即時合成，無取樣檔）。
  */
 (function (root) {
   "use strict";

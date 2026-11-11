@@ -1,5 +1,5 @@
 /**
- * 隙光晨檢 — 純遊戲邏輯（無 DOM、無 Web Audio）。
+ * 今日訓導檢查手機櫃 — 純遊戲邏輯（無 DOM、無 Web Audio）。
  * 原創校園儲物櫃電筒記憶玩法。
  */
 (function (root, factory) {
@@ -11,15 +11,20 @@
 })(typeof globalThis !== "undefined" ? globalThis : this, function () {
   "use strict";
 
-  var COLS = 10;
-  var ROWS = 12;
+  var TITLE = "今日訓導檢查手機櫃";
+  var FORMS = 4;
+  var FORM_NAMES = ["中一", "中二", "中三", "中四"];
+  var COLS = 15;
+  var ROWS = 8;
   var LOCKER_COUNT = COLS * ROWS;
-  var EMPTY_COUNT = 8;
-  var PHASE1_SECONDS = 30;
-  var PHASE2_SECONDS = 10;
+  var TOTAL_LOCKERS = LOCKER_COUNT * FORMS;
+  var EMPTY_PER_FORM = 4;
+  var EMPTY_COUNT = EMPTY_PER_FORM * FORMS;
+  var PHASE1_SECONDS = 45;
+  var PHASE2_SECONDS = 15;
   var POINTS_HIT = 100;
   var POINTS_FALSE = 25;
-  var BEST_KEY = "hai-gwong-best";
+  var BEST_KEY = "hai-gwong-best-v2";
 
   var GRADES = {
     perfect: "火眼金睛",
@@ -31,7 +36,7 @@
   };
 
   var BLURBS = {
-    perfect: "八格全中，一格都冇點錯。今早嘅值日真係醒目。",
+    perfect: "十六格全中，一格都冇點錯。今早嘅值日真係醒目。",
     careful: "差不多睇晒，只係差少少。已經好穩陣。",
     pass: "有留心照過，記憶都唔差。再熟一次會更準。",
     missed: "有幾格冇交機嘅櫃漏咗。下次可以再慢慢掃多一輪。",
@@ -41,6 +46,24 @@
 
   function clamp(x, a, b) {
     return x < a ? a : x > b ? b : x;
+  }
+
+  function formOf(id) {
+    return (id / LOCKER_COUNT) | 0;
+  }
+
+  function localOf(id) {
+    return id % LOCKER_COUNT;
+  }
+
+  function globalId(form, localId) {
+    return form * LOCKER_COUNT + localId;
+  }
+
+  function lockerLabel(id) {
+    var form = formOf(id);
+    var name = FORM_NAMES[form] || ("年級" + (form + 1));
+    return name + " 第 " + (localOf(id) + 1) + " 格";
   }
 
   function mulberry32(a) {
@@ -86,17 +109,19 @@
   }
 
   /**
-   * 120 個互異、低飽和、非霓虹嘅櫃門顏色，方便喺電筒光下分辨。
+   * 每個年級 120 個互異、低飽和、非霓虹嘅櫃門顏色，方便喺電筒光下分辨。
    */
-  function buildPalette() {
+  function buildPalette(form) {
+    var formIndex = form == null ? 0 : form;
     var out = [];
     var seen = {};
+    var hue0 = formIndex * 53;
     for (var i = 0; i < LOCKER_COUNT; i++) {
       var col = i % COLS;
       var row = (i / COLS) | 0;
-      var hue = (col * 36 + row * 2.7 + (col % 2) * 8 + (row % 3) * 1.1) % 360;
-      var sat = 28 + (row % 4) * 5 + (col % 3) * 2;
-      var light = 46 + (row % 6) * 3.5 + ((col * 2) % 5);
+      var hue = (hue0 + col * 23.3 + row * 4.1 + (col % 2) * 8 + (row % 3) * 1.1) % 360;
+      var sat = 28 + (row % 4) * 5 + (col % 3) * 2 + (formIndex % 2);
+      var light = 46 + (row % 6) * 3.5 + ((col * 2 + formIndex) % 5);
       if (sat > 50) sat = 50;
       if (light > 70) light = 70;
       if (light < 42) light = 42;
@@ -120,7 +145,14 @@
     return out;
   }
 
-  var PALETTE = buildPalette();
+  function buildPalettes() {
+    var all = [];
+    for (var f = 0; f < FORMS; f++) all.push(buildPalette(f));
+    return all;
+  }
+
+  var PALETTES = buildPalettes();
+  var PALETTE = PALETTES[0];
 
   function shufflePick(rng, count, total) {
     var ids = [];
@@ -138,18 +170,19 @@
   /**
    * 由畫布尺寸計儲物櫃格位。header 同地板高度由呼叫端預留。
    * play: { x, y, w, h }
+   * 15×8 格，配合橫向 16:9 走廊。
    */
   function layoutGrid(play) {
-    var area = play || { x: 0, y: 0, w: 360, h: 600 };
-    var gutterX = Math.max(1, Math.min(3, area.w * 0.006));
-    var gutterY = Math.max(1, Math.min(3, area.h * 0.005));
+    var area = play || { x: 0, y: 0, w: 640, h: 360 };
+    var gutterX = Math.max(1, Math.min(3, area.w * 0.005));
+    var gutterY = Math.max(1, Math.min(3, area.h * 0.006));
     var maxW = (area.w - gutterX * (COLS + 1)) / COLS;
     var maxH = (area.h - gutterY * (ROWS + 1)) / ROWS;
     var cellW = maxW;
     var cellH = maxH;
-    // Keep doors taller than they are wide, even in a wide landscape frame.
-    if (cellH < cellW * 1.12) cellW = cellH / 1.2;
-    if (cellH > cellW * 1.75) cellH = cellW * 1.55;
+    // 櫃門接近方形至略高，令 15×8 喺 16:9 走廊入面填得舒服。
+    if (cellH < cellW * 0.82) cellW = cellH / 0.9;
+    if (cellH > cellW * 1.45) cellH = cellW * 1.28;
     if (cellW < 8) cellW = Math.max(6, maxW);
     if (cellH < 8) cellH = Math.max(6, maxH);
     var gridW = cellW * COLS + gutterX * (COLS + 1);
@@ -196,7 +229,7 @@
   }
 
   function circleHitsSlit(beam, locker) {
-    if (!beam || !(beam.radius > 0)) return false;
+    if (!beam || !(beam.radius > 0) || !locker) return false;
     var s = locker.slit;
     var cx = clamp(beam.x, s.x, s.x + s.w);
     var cy = clamp(beam.y, s.y, s.y + s.h);
@@ -221,24 +254,37 @@
   function createRound(seed) {
     var s = seed == null ? 1 : seed;
     var rng = mulberry32(typeof s === "number" ? s : hashString(String(s)));
-    var emptyIds = shufflePick(rng, EMPTY_COUNT, LOCKER_COUNT);
-    var emptySet = {};
-    var i;
-    for (i = 0; i < emptyIds.length; i++) emptySet[emptyIds[i]] = 1;
+    var emptyIds = [];
+    var emptyIdsByForm = [];
     var lockers = [];
-    for (i = 0; i < LOCKER_COUNT; i++) {
-      lockers.push({
-        id: i,
-        number: i + 1,
-        col: i % COLS,
-        row: (i / COLS) | 0,
-        color: PALETTE[i],
-        hasPhone: !emptySet[i],
-      });
+    var f, i, k;
+    for (f = 0; f < FORMS; f++) {
+      var localEmpties = shufflePick(rng, EMPTY_PER_FORM, LOCKER_COUNT);
+      emptyIdsByForm.push(localEmpties.slice());
+      var emptySet = {};
+      for (k = 0; k < localEmpties.length; k++) {
+        emptySet[localEmpties[k]] = 1;
+        emptyIds.push(globalId(f, localEmpties[k]));
+      }
+      var palette = PALETTES[f];
+      for (i = 0; i < LOCKER_COUNT; i++) {
+        lockers.push({
+          id: globalId(f, i),
+          form: f,
+          localId: i,
+          number: i + 1,
+          col: i % COLS,
+          row: (i / COLS) | 0,
+          color: palette[i],
+          hasPhone: !emptySet[i],
+        });
+      }
     }
+    emptyIds.sort(function (a, b) { return a - b; });
     return {
       seed: s,
-      emptyIds: emptyIds.slice(),
+      emptyIds: emptyIds,
+      emptyIdsByForm: emptyIdsByForm,
       lockers: lockers,
     };
   }
@@ -252,12 +298,18 @@
     return h >>> 0;
   }
 
+  function formLockers(round, form) {
+    var f = clamp(form | 0, 0, FORMS - 1);
+    var start = f * LOCKER_COUNT;
+    return (round && round.lockers ? round.lockers : []).slice(start, start + LOCKER_COUNT);
+  }
+
   function gradeOf(correct, falseFlags) {
     if (correct === EMPTY_COUNT && falseFlags === 0) return "perfect";
-    if (falseFlags >= 4 && falseFlags > correct) return "wild";
-    if (correct >= 6 && falseFlags <= 1) return "careful";
-    if ((correct >= 5 && falseFlags <= 2) || (correct >= 4 && falseFlags <= 1)) return "pass";
-    if (correct >= 3 && falseFlags <= 3) return "missed";
+    if (falseFlags >= 8 && falseFlags > correct) return "wild";
+    if (correct >= 12 && falseFlags <= 2) return "careful";
+    if ((correct >= 10 && falseFlags <= 4) || (correct >= 8 && falseFlags <= 2)) return "pass";
+    if (correct >= 6 && falseFlags <= 6) return "missed";
     return "practice";
   }
 
@@ -329,7 +381,7 @@
 
   function GameEngine(options) {
     options = options || {};
-    this.layout = layoutGrid(options.play || { x: 0, y: 0, w: 360, h: 600 });
+    this.layout = layoutGrid(options.play || { x: 0, y: 0, w: 640, h: 360 });
     this.beam = null;
     this.reset(options.seed);
   }
@@ -338,6 +390,7 @@
     if (seed == null) seed = (Date.now() ^ (Math.floor(Math.random() * 0xffffffff))) >>> 0;
     this.round = createRound(seed);
     this.seed = this.round.seed;
+    this.form = 0;
     this.phase = "inspect";
     this.time = 0;
     this.phaseTime = 0;
@@ -356,8 +409,26 @@
     return this.layout;
   };
 
+  GameEngine.prototype.setForm = function (index) {
+    var next = clamp(index | 0, 0, FORMS - 1);
+    this.form = next;
+    return this.form;
+  };
+
+  GameEngine.prototype.nextForm = function () {
+    return this.setForm(this.form + 1);
+  };
+
+  GameEngine.prototype.prevForm = function () {
+    return this.setForm(this.form - 1);
+  };
+
+  GameEngine.prototype.formLockers = function () {
+    return formLockers(this.round, this.form);
+  };
+
   GameEngine.prototype.lockerGeom = function (id) {
-    return this.layout.lockers[id] || null;
+    return this.layout.lockers[localOf(id)] || null;
   };
 
   GameEngine.prototype.setBeam = function (x, y, radius) {
@@ -386,10 +457,12 @@
   GameEngine.prototype._markVisited = function () {
     if (this.phase !== "inspect" || !this.beam) return;
     var geos = this.layout.lockers;
+    var base = this.form * LOCKER_COUNT;
     for (var i = 0; i < geos.length; i++) {
-      if (!this.visited[i] && circleHitsSlit(this.beam, geos[i])) {
-        this.visited[i] = 1;
-        this.visitEvents.push(i);
+      var gid = base + i;
+      if (!this.visited[gid] && circleHitsSlit(this.beam, geos[i])) {
+        this.visited[gid] = 1;
+        this.visitEvents.push(gid);
       }
     }
   };
@@ -404,30 +477,42 @@
     return !!this.visited[id];
   };
 
+  GameEngine.prototype.visitedCount = function () {
+    var n = 0;
+    for (var k in this.visited) {
+      if (this.visited[k]) n++;
+    }
+    return n;
+  };
+
   GameEngine.prototype.isSelected = function (id) {
     return !!this.selected[id];
   };
 
   GameEngine.prototype.reveal = function (id) {
     if (this.phase !== "inspect") return null;
-    if (id < 0 || id >= LOCKER_COUNT) return null;
-    var geo = this.layout.lockers[id];
+    if (id < 0 || id >= TOTAL_LOCKERS) return null;
+    if (formOf(id) !== this.form) return null;
+    var geo = this.layout.lockers[localOf(id)];
     if (!circleHitsSlit(this.beam, geo)) return null;
-    return { hasPhone: !!this.round.lockers[id].hasPhone, number: id + 1 };
+    var locker = this.round.lockers[id];
+    return { hasPhone: !!locker.hasPhone, number: locker.number, form: locker.form };
   };
 
   GameEngine.prototype.hitTest = function (x, y) {
     var geos = this.layout.lockers;
     for (var i = 0; i < geos.length; i++) {
       var g = geos[i];
-      if (x >= g.x && x <= g.x + g.w && y >= g.y && y <= g.y + g.h) return i;
+      if (x >= g.x && x <= g.x + g.w && y >= g.y && y <= g.y + g.h) {
+        return this.form * LOCKER_COUNT + i;
+      }
     }
     return -1;
   };
 
   GameEngine.prototype.toggleSelect = function (id) {
     if (this.phase !== "select") return false;
-    if (id < 0 || id >= LOCKER_COUNT) return false;
+    if (id < 0 || id >= TOTAL_LOCKERS) return false;
     if (this.selected[id]) {
       delete this.selected[id];
       this.selectedCount--;
@@ -499,9 +584,14 @@
   };
 
   return {
+    TITLE: TITLE,
+    FORMS: FORMS,
+    FORM_NAMES: FORM_NAMES,
     COLS: COLS,
     ROWS: ROWS,
     LOCKER_COUNT: LOCKER_COUNT,
+    TOTAL_LOCKERS: TOTAL_LOCKERS,
+    EMPTY_PER_FORM: EMPTY_PER_FORM,
     EMPTY_COUNT: EMPTY_COUNT,
     PHASE1_SECONDS: PHASE1_SECONDS,
     PHASE2_SECONDS: PHASE2_SECONDS,
@@ -511,16 +601,23 @@
     GRADES: GRADES,
     BLURBS: BLURBS,
     PALETTE: PALETTE,
+    PALETTES: PALETTES,
     clamp: clamp,
+    formOf: formOf,
+    localOf: localOf,
+    globalId: globalId,
+    lockerLabel: lockerLabel,
     mulberry32: mulberry32,
     hslToHex: hslToHex,
     buildPalette: buildPalette,
+    buildPalettes: buildPalettes,
     layoutGrid: layoutGrid,
     slitCenter: slitCenter,
     circleHitsSlit: circleHitsSlit,
     suggestedBeamRadius: suggestedBeamRadius,
     beamFromPointer: beamFromPointer,
     createRound: createRound,
+    formLockers: formLockers,
     gradeOf: gradeOf,
     scoreSelection: scoreSelection,
     readBest: readBest,

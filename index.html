@@ -6,33 +6,42 @@
   <meta name="apple-mobile-web-app-capable" content="yes" />
   <meta name="apple-mobile-web-app-status-bar-style" content="default" />
   <meta name="theme-color" content="#f3ead8" />
-  <meta name="description" content="隙光晨檢——電筒照櫃隙，記住冇交機嘅格。中一級 120 個儲物櫃，30 秒檢查，10 秒點選。" />
-  <title>隙光晨檢</title>
-  <link rel="stylesheet" href="style.css?v=20261111a" />
+  <meta name="description" content="今日訓導檢查手機櫃——電筒照櫃隙，記住冇交機嘅格。中一至中四各 120 個儲物櫃，可左右滑動換頁。共有 45 秒檢查，15 秒點選。" />
+  <title>今日訓導檢查手機櫃</title>
+  <link rel="stylesheet" href="style.css?v=20261111b" />
   <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='14' fill='%23f3ead8'/%3E%3Crect x='10' y='16' width='16' height='22' rx='2' fill='%237a8c6a' stroke='%232c241c' stroke-width='1.5'/%3E%3Crect x='28' y='16' width='16' height='22' rx='2' fill='%23c4a574' stroke='%232c241c' stroke-width='1.5'/%3E%3Crect x='46' y='16' width='8' height='22' rx='2' fill='%238a6a62' stroke='%232c241c' stroke-width='1.5'/%3E%3Crect x='17' y='22' width='2' height='10' fill='%232c241c'/%3E%3Crect x='35' y='22' width='2' height='10' fill='%232c241c'/%3E%3Ccircle cx='24' cy='44' r='14' fill='%23f3e0a8' fill-opacity='0.7' stroke='%23d2b56a' stroke-width='1.2'/%3E%3Crect x='21' y='48' width='6' height='10' rx='2' fill='%233f5c3d' stroke='%232c241c' stroke-width='1.2'/%3E%3C/svg%3E" />
 </head>
 <body>
   <div id="safe-probe" aria-hidden="true"></div>
   <div id="app" class="is-title">
-    <canvas id="stage" aria-label="隙光晨檢遊戲畫面"></canvas>
+    <canvas id="stage" aria-label="今日訓導檢查手機櫃遊戲畫面"></canvas>
 
     <div id="hud" class="hud hidden">
       <button type="button" id="btn-mute-play" class="icon-btn" aria-label="靜音">聲</button>
-      <div id="hud-time" class="hud-chip" aria-live="polite">檢查 0:30</div>
+      <div id="hud-time" class="hud-chip" aria-live="polite">檢查 0:45</div>
       <p id="hud-meta" class="hud-meta">已照 0 格</p>
     </div>
+
+    <nav id="page-nav" class="page-nav hidden" aria-label="年級">
+      <button type="button" id="btn-page-prev" class="page-arrow" aria-label="上一版">‹</button>
+      <button type="button" class="page-tab is-active" data-form="0">中一</button>
+      <button type="button" class="page-tab" data-form="1">中二</button>
+      <button type="button" class="page-tab" data-form="2">中三</button>
+      <button type="button" class="page-tab" data-form="3">中四</button>
+      <button type="button" id="btn-page-next" class="page-arrow" aria-label="下一版">›</button>
+    </nav>
 
     <section id="screen-title" class="panel panel-title" aria-labelledby="game-title">
       <div class="brand">
         <p class="eyebrow">校園值日小遊戲</p>
-        <h1 id="game-title">隙光晨檢</h1>
+        <h1 id="game-title">今日訓導檢查手機櫃</h1>
         <p class="subtitle">電筒照櫃隙，記住冇交機嘅格</p>
       </div>
       <div class="panel-inner">
         <ul class="howto">
-          <li>中一級共有 <strong>120</strong> 個儲物櫃。同學應該將手提電話放進自己嗰格；冇交機就算違規。</li>
-          <li>限時 <strong>30 秒</strong>，用電筒照每個櫃門嘅一條罅隙，睇睇裏面有冇電話。記住冇電話嘅格號。</li>
-          <li>之後 <strong>10 秒</strong>，點選你記得冇交機嘅儲物櫃。再撳一次可以取消。</li>
+          <li>請將手機打橫。中一至中四各有 <strong>120</strong> 個儲物櫃，可左右滑動或撳年級換頁。同學應該將手提電話放進自己嗰格；冇交機就算違規。</li>
+          <li>共有 <strong>45 秒</strong>，用電筒照每個櫃門嘅一條罅隙，睇睇裏面有冇電話。四個年級都要檢查，記住冇電話嘅格號。</li>
+          <li>之後共有 <strong>15 秒</strong>，滑去相應年級，點選你記得冇交機嘅儲物櫃。再撳一次可以取消。</li>
         </ul>
         <button type="button" id="btn-start" class="btn primary">開始晨檢</button>
         <button type="button" id="btn-mute-title" class="btn ghost">聲音：開</button>
@@ -55,11 +64,11 @@
       </div>
     </section>
 
-    <div id="rotate-hint" class="rotate-hint hidden">請將裝置直立</div>
+    <div id="rotate-hint" class="rotate-hint hidden">請將手機橫過來玩</div>
   </div>
 
-  <script src="engine.js?v=20261111a"></script>
-  <script src="audio.js?v=20261111a"></script>
-  <script src="game.js?v=20261111a"></script>
+  <script src="engine.js?v=20261111b"></script>
+  <script src="audio.js?v=20261111b"></script>
+  <script src="game.js?v=20261111b"></script>
 </body>
 </html>

@@ -83,30 +83,30 @@ test("locker colours are unique within each form wall", () => {
   }
 });
 
-test("phase durations are 45s then 15s and are shared across pages", () => {
-  assert.equal(E.PHASE1_SECONDS, 45);
-  assert.equal(E.PHASE2_SECONDS, 15);
+test("phase durations are 60s then 20s and are shared across pages", () => {
+  assert.equal(E.PHASE1_SECONDS, 60);
+  assert.equal(E.PHASE2_SECONDS, 20);
   const eng = new E.GameEngine({ seed: 3, play: { x: 0, y: 0, w: 640, h: 360 } });
   assert.equal(eng.phase, "inspect");
-  assert.equal(eng.phaseLimit(), 45);
+  assert.equal(eng.phaseLimit(), 60);
   assert.equal(eng.form, 0);
   eng.step(20);
   assert.equal(eng.phase, "inspect");
   eng.setForm(2);
   assert.equal(eng.form, 2);
   assert.equal(eng.phase, "inspect");
-  assert.ok(eng.remaining() > 24.9 && eng.remaining() < 25.1);
-  eng.step(24.5);
+  assert.ok(eng.remaining() > 39.9 && eng.remaining() < 40.1);
+  eng.step(39.5);
   assert.equal(eng.phase, "inspect");
   assert.ok(eng.remaining() > 0.4 && eng.remaining() < 0.6);
   eng.setForm(3);
   eng.step(0.5);
   assert.equal(eng.phase, "select");
   assert.equal(eng.form, 3, "form is kept when entering select");
-  assert.equal(eng.phaseLimit(), 15);
-  assert.ok(eng.remaining() <= 15 && eng.remaining() > 14.4);
+  assert.equal(eng.phaseLimit(), 20);
+  assert.ok(eng.remaining() <= 20 && eng.remaining() > 19.4);
   eng.setForm(0);
-  eng.step(14.9);
+  eng.step(19.9);
   assert.equal(eng.phase, "select");
   eng.step(0.2);
   assert.equal(eng.phase, "result");
@@ -185,7 +185,7 @@ test("phase 2 cannot reveal contents even with a beam set", () => {
   eng.setBeam(c.x, c.y, 30);
   assert.equal(eng.reveal(id).hasPhone, false);
 
-  eng.step(45);
+  eng.step(60);
   assert.equal(eng.phase, "select");
   // Force a beam object as a hostile/stale pointer
   eng.beam = { x: c.x, y: c.y, radius: 80 };
@@ -210,7 +210,7 @@ test("visited ticks do not reveal contents and clear when phase 2 starts", () =>
   if (dx * dx + dy * dy > 40 * 40) {
     assert.equal(eng.isVisited(far), false);
   }
-  eng.step(45);
+  eng.step(60);
   assert.equal(eng.phase, "select");
   assert.equal(eng.isVisited(id), false);
 });
@@ -218,7 +218,7 @@ test("visited ticks do not reveal contents and clear when phase 2 starts", () =>
 test("cannot toggle in phase 1; toggle and untap work in phase 2 across forms", () => {
   const eng = new E.GameEngine({ seed: 9, play: { x: 0, y: 0, w: 640, h: 360 } });
   assert.equal(eng.toggleSelect(0), false);
-  eng.step(45);
+  eng.step(60);
   assert.equal(eng.toggleSelect(0), true);
   assert.equal(eng.isSelected(0), true);
   assert.equal(eng.toggleSelect(0), true);

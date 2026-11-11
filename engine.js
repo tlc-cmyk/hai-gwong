@@ -20,8 +20,8 @@
   var TOTAL_LOCKERS = LOCKER_COUNT * FORMS;
   var EMPTY_PER_FORM = 4;
   var EMPTY_COUNT = EMPTY_PER_FORM * FORMS;
-  var PHASE1_SECONDS = 45;
-  var PHASE2_SECONDS = 15;
+  var PHASE1_SECONDS = 60;
+  var PHASE2_SECONDS = 20;
   var POINTS_HIT = 100;
   var POINTS_FALSE = 25;
   var BEST_KEY = "hai-gwong-best-v3";

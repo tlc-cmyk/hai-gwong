@@ -225,12 +225,16 @@
       var row = (i / COLS) | 0;
       var x = originX + gutterX + col * (cellW + gutterX);
       var y = originY + gutterY + row * (cellH + gutterY);
-      // 罅隙夠闊，薄身打橫電話照進去仍然清楚。
+      // 罅隙靠近櫃底，照進去見到瞓喺層板最底嘅薄身打橫電話。
       var slitW = Math.max(12, cellW * 0.76);
-      var slitH = Math.max(9, Math.min(cellH * 0.48, cellH - 11));
+      var slitH = Math.max(9, Math.min(cellH * 0.42, cellH - 12));
       var slitX = x + (cellW - slitW) / 2;
-      var slitY = y + Math.max(cellH * 0.28, 8);
-      if (slitY + slitH > y + cellH - 2) slitY = y + cellH - 2 - slitH;
+      var bottomPad = Math.max(1.5, Math.min(3, cellH * 0.06));
+      var slitY = y + cellH - bottomPad - slitH;
+      if (slitY < y + 8) {
+        slitY = y + 8;
+        slitH = Math.max(8, y + cellH - bottomPad - slitY);
+      }
       lockers.push({
         id: i,
         number: i + 1,

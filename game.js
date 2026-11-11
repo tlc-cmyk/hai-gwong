@@ -574,11 +574,22 @@
     if (showNum) {
       ctx.fillStyle = lit ? ink : "rgba(247,241,230,0.16)";
       var code = locker.code || E.lockerCode(locker.form, locker.localId);
-      var fs = Math.max(3.8, Math.min(5.2, w * 0.14, h * 0.135));
-      ctx.font = '700 ' + fs + 'px "PingFang HK","PingFang TC","Noto Sans TC",sans-serif';
+      var padX = Math.max(1.4, w * 0.04);
+      var padY = Math.max(1.0, h * 0.03);
+      // Leave a sliver on the right for the visited tick; scale to the cell.
+      var maxW = Math.max(12, w - padX * 2 - 6);
+      var maxH = Math.max(8, Math.min(h * 0.46, 14));
+      var fs = Math.min(w * 0.38, h * 0.4, maxH);
+      var codeFont = '700 ';
+      var codeFamily = 'px "PingFang HK","PingFang TC","Noto Sans TC",sans-serif';
+      ctx.font = codeFont + fs + codeFamily;
+      var tw = ctx.measureText(code).width;
+      if (tw > maxW && tw > 0) fs = fs * (maxW / tw);
+      if (fs > maxH) fs = maxH;
+      ctx.font = codeFont + fs + codeFamily;
       ctx.textAlign = "left";
       ctx.textBaseline = "top";
-      ctx.fillText(code, x + 1.8, y + 1.2);
+      ctx.fillText(code, x + padX, y + padY);
     }
 
     if (mode === "lit" || mode === "dim") {

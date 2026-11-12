@@ -621,6 +621,53 @@
     return this.phase;
   };
 
+  var PLAYER_NAME_KEY = "hai-gwong-player-name";
+  var PLAYER_NAME_MAX = 12;
+
+  function normalizePlayerName(raw) {
+    if (raw == null) return "";
+    return String(raw).replace(/^\s+|\s+$/g, "");
+  }
+
+  function isValidPlayerName(raw) {
+    var name = normalizePlayerName(raw);
+    return name.length >= 1 && name.length <= PLAYER_NAME_MAX;
+  }
+
+  /**
+   * 排名：分數高者在前，同分以較早 created_at 優先，最多 10 名。
+   */
+  function rankScores(rows, limit) {
+    var list = (rows || []).slice();
+    list.sort(function (a, b) {
+      var sa = (a && a.score) | 0;
+      var sb = (b && b.score) | 0;
+      if (sb !== sa) return sb - sa;
+      var ta = (a && a.created_at) || "";
+      var tb = (b && b.created_at) || "";
+      if (ta < tb) return -1;
+      if (ta > tb) return 1;
+      return 0;
+    });
+    var cap = limit == null ? 10 : limit;
+    if (cap < 0) cap = 0;
+    return list.slice(0, cap).map(function (row, i) {
+      return {
+        rank: i + 1,
+        player_name: row && row.player_name != null ? String(row.player_name) : "",
+        score: (row && row.score) | 0,
+        created_at: (row && row.created_at) || "",
+      };
+    });
+  }
+
+  function isSameScoreRow(a, b) {
+    if (!a || !b) return false;
+    return a.player_name === b.player_name &&
+      ((a.score) | 0) === ((b.score) | 0) &&
+      (a.created_at || "") === (b.created_at || "");
+  }
+
   return {
     TITLE: TITLE,
     FORMS: FORMS,
@@ -662,5 +709,11 @@
     readBest: readBest,
     writeBest: writeBest,
     GameEngine: GameEngine,
+    PLAYER_NAME_KEY: PLAYER_NAME_KEY,
+    PLAYER_NAME_MAX: PLAYER_NAME_MAX,
+    normalizePlayerName: normalizePlayerName,
+    isValidPlayerName: isValidPlayerName,
+    rankScores: rankScores,
+    isSameScoreRow: isSameScoreRow,
   };
 });

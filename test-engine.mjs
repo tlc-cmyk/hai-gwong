@@ -391,4 +391,54 @@ test("beamFromPointer offsets the light above the finger", () => {
   assert.ok(Math.abs(beam.y - (200 - 50 * 0.72)) < 1e-9);
 });
 
+test("player name must be trimmed and 1 to 12 characters", () => {
+  assert.equal(E.PLAYER_NAME_MAX, 12);
+  assert.equal(E.PLAYER_NAME_KEY, "hai-gwong-player-name");
+  assert.equal(E.normalizePlayerName("  小明  "), "小明");
+  assert.equal(E.normalizePlayerName("   "), "");
+  assert.equal(E.normalizePlayerName(null), "");
+  assert.equal(E.normalizePlayerName(undefined), "");
+  assert.equal(E.isValidPlayerName(""), false);
+  assert.equal(E.isValidPlayerName("   "), false);
+  assert.equal(E.isValidPlayerName("\n\t"), false);
+  assert.equal(E.isValidPlayerName("A"), true);
+  assert.equal(E.isValidPlayerName("值班同學"), true);
+  assert.equal(E.isValidPlayerName("123456789012"), true);
+  assert.equal(E.isValidPlayerName("1234567890123"), false);
+  assert.equal(E.isValidPlayerName("  123456789012  "), true);
+  assert.equal(E.isValidPlayerName("  1234567890123  "), false);
+});
+
+test("rankScores orders by score desc then earlier created_at and keeps top 10", () => {
+  const rows = [
+    { player_name: "晚到", score: 1600, created_at: "2026-11-12T03:00:00.000Z" },
+    { player_name: "早到", score: 1600, created_at: "2026-11-12T01:00:00.000Z" },
+    { player_name: "中游", score: 800, created_at: "2026-11-12T02:00:00.000Z" },
+    { player_name: "低分甲", score: 100, created_at: "2026-11-12T04:00:00.000Z" },
+    { player_name: "低分乙", score: 100, created_at: "2026-11-12T03:30:00.000Z" },
+  ];
+  for (let i = 0; i < 8; i++) {
+    rows.push({ player_name: "第" + (i + 6), score: 50 - i, created_at: "2026-11-12T05:0" + i + ":00.000Z" });
+  }
+  assert.equal(rows.length, 13);
+  const ranked = E.rankScores(rows, 10);
+  assert.equal(ranked.length, 10);
+  assert.equal(ranked[0].rank, 1);
+  assert.equal(ranked[0].player_name, "早到");
+  assert.equal(ranked[1].player_name, "晚到");
+  assert.equal(ranked[2].player_name, "中游");
+  assert.equal(ranked[3].player_name, "低分乙");
+  assert.equal(ranked[4].player_name, "低分甲");
+  assert.equal(ranked[9].rank, 10);
+  assert.ok(ranked.every((row) => row.score >= 43));
+  assert.equal(E.isSameScoreRow(ranked[0], {
+    player_name: "早到",
+    score: 1600,
+    created_at: "2026-11-12T01:00:00.000Z",
+  }), true);
+  assert.equal(E.isSameScoreRow(ranked[0], ranked[1]), false);
+  assert.deepEqual(E.rankScores([], 10), []);
+});
+
 console.log("\n" + passed + " tests passed");
+

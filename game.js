@@ -30,6 +30,16 @@
     document.getElementById("btn-mute-title"),
     document.getElementById("btn-mute-result"),
   ];
+  var nameInput = document.getElementById("player-name");
+  var titleBoard = document.getElementById("title-board");
+  var resultBoard = document.getElementById("result-board");
+  var resultBoardNote = document.getElementById("result-board-note");
+
+  var BOARD_URL = "https://vambwvkvnlebmpqajxjp.supabase.co/rest/v1/scores";
+  var BOARD_KEY = "sb_publishable_KNzP-iOTjXzcVygVYMQ3zw_ge3bmzym";
+  var playerName = "";
+  var resultSubmitted = false;
+  var highlightRow = null;
 
   var screen = "title";
   var eng = new E.GameEngine({ seed: 1 });
@@ -195,6 +205,157 @@
     if (btnPageNext) btnPageNext.disabled = form >= E.FORMS - 1;
   }
 
+  function boardHeaders(forJson) {
+    var headers = {
+      apikey: BOARD_KEY,
+      Authorization: "Bearer " + BOARD_KEY,
+      Accept: "application/json",
+    };
+    if (forJson) headers["Content-Type"] = "application/json";
+    return headers;
+  }
+
+  function readStoredName() {
+    try {
+      return E.normalizePlayerName(window.localStorage.getItem(E.PLAYER_NAME_KEY) || "");
+    } catch (err) {
+      return "";
+    }
+  }
+
+  function writeStoredName(name) {
+    try {
+      window.localStorage.setItem(E.PLAYER_NAME_KEY, name);
+    } catch (err) { /* ignore quota / private mode */ }
+  }
+
+  function currentName() {
+    return E.normalizePlayerName(nameInput ? nameInput.value : playerName);
+  }
+
+  function syncStartEnabled() {
+    var ok = E.isValidPlayerName(currentName());
+    if (btnStart) btnStart.disabled = !ok;
+    return ok;
+  }
+
+  function applyStoredName() {
+    playerName = readStoredName();
+    if (nameInput && playerName) nameInput.value = playerName;
+    syncStartEnabled();
+  }
+
+  function commitPlayerName() {
+    var name = currentName();
+    if (!E.isValidPlayerName(name)) return "";
+    playerName = name;
+    if (nameInput && nameInput.value !== name) nameInput.value = name;
+    writeStoredName(name);
+    syncStartEnabled();
+    return name;
+  }
+
+  function renderBoard(container, rows, highlight) {
+    if (!container) return;
+    container.textContent = "";
+    if (!rows || !rows.length) {
+      container.classList.add("is-empty");
+      container.textContent = "暫時未有紀錄";
+      return;
+    }
+    container.classList.remove("is-empty");
+    for (var i = 0; i < rows.length; i++) {
+      var row = rows[i];
+      var li = document.createElement("li");
+      if (highlight && E.isSameScoreRow(row, highlight)) li.className = "is-mine";
+      var rank = document.createElement("span");
+      rank.className = "board-rank";
+      rank.textContent = String(row.rank);
+      var nameEl = document.createElement("span");
+      nameEl.className = "board-name";
+      nameEl.textContent = row.player_name;
+      var scoreEl = document.createElement("span");
+      scoreEl.className = "board-score";
+      scoreEl.textContent = String(row.score);
+      li.appendChild(rank);
+      li.appendChild(nameEl);
+      li.appendChild(scoreEl);
+      container.appendChild(li);
+    }
+  }
+
+  function fetchTop10() {
+    var url = BOARD_URL +
+      "?select=player_name,score,created_at&order=score.desc,created_at.asc&limit=10";
+    return fetch(url, { headers: boardHeaders(false) }).then(function (res) {
+      if (!res.ok) throw new Error("board " + res.status);
+      return res.json();
+    }).then(function (rows) {
+      return E.rankScores(rows, 10);
+    });
+  }
+
+  function refreshBoards(highlight) {
+    return fetchTop10().then(function (rows) {
+      renderBoard(titleBoard, rows, highlight);
+      renderBoard(resultBoard, rows, highlight);
+      return rows;
+    });
+  }
+
+  function postScore(name, score) {
+    return fetch(BOARD_URL, {
+      method: "POST",
+      headers: (function () {
+        var h = boardHeaders(true);
+        h.Prefer = "return=representation";
+        return h;
+      })(),
+      body: JSON.stringify({ player_name: name, score: score }),
+    }).then(function (res) {
+      if (!res.ok) throw new Error("board " + res.status);
+      return res.json();
+    }).then(function (body) {
+      if (Array.isArray(body)) return body[0] || null;
+      return body || null;
+    });
+  }
+
+  function setBoardNote(text) {
+    if (!resultBoardNote) return;
+    if (text) {
+      resultBoardNote.hidden = false;
+      resultBoardNote.textContent = text;
+    } else {
+      resultBoardNote.hidden = true;
+      resultBoardNote.textContent = "";
+    }
+  }
+
+  function submitResultScore() {
+    if (resultSubmitted || !eng.result) return;
+    resultSubmitted = true;
+    setBoardNote("");
+    var name = playerName || commitPlayerName();
+    var score = eng.result.score | 0;
+    if (!E.isValidPlayerName(name)) {
+      setBoardNote("暫時未能上載排行榜");
+      return;
+    }
+    postScore(name, score).then(function (posted) {
+      highlightRow = posted
+        ? {
+            player_name: posted.player_name,
+            score: posted.score | 0,
+            created_at: posted.created_at || "",
+          }
+        : { player_name: name, score: score, created_at: "" };
+      return refreshBoards(highlightRow);
+    }).catch(function () {
+      setBoardNote("暫時未能上載排行榜");
+    });
+  }
+
   function showScreen(name) {
     screen = name;
     app.classList.toggle("is-title", name === "title");
@@ -232,6 +393,9 @@
 
   function startRound(keepSeed) {
     Audio.unlock();
+    resultSubmitted = false;
+    highlightRow = null;
+    setBoardNote("");
     var seed = keepSeed ? eng.seed : ((Date.now() ^ Math.floor(Math.random() * 0xffffffff)) >>> 0);
     eng.reset(seed);
     slideOffset = 0;
@@ -289,6 +453,7 @@
     fillResult();
     showScreen("result");
     if (eng.result) Audio.resultSting(eng.result.gradeKey);
+    submitResultScore();
   }
 
   /* ---------- drawing helpers ---------- */
@@ -1059,18 +1224,38 @@
     }
   });
 
-  btnStart.addEventListener("click", function () {
+  function tryStartRound() {
+    var name = commitPlayerName();
+    if (!name) {
+      syncStartEnabled();
+      if (nameInput) nameInput.focus();
+      return;
+    }
     Audio.unlock();
     startRound(false);
-  });
-  btnRetry.addEventListener("click", function () {
-    Audio.unlock();
-    startRound(false);
-  });
+  }
+
+  btnStart.addEventListener("click", tryStartRound);
+  btnRetry.addEventListener("click", tryStartRound);
   btnHome.addEventListener("click", function () {
     Audio.stopHum();
     showScreen("title");
+    refreshBoards(highlightRow).catch(function () { /* keep last board */ });
   });
+  if (nameInput) {
+    nameInput.addEventListener("input", syncStartEnabled);
+    nameInput.addEventListener("change", function () {
+      var name = currentName();
+      if (E.isValidPlayerName(name)) commitPlayerName();
+      else syncStartEnabled();
+    });
+    nameInput.addEventListener("keydown", function (ev) {
+      if (ev.key === "Enter") {
+        ev.preventDefault();
+        tryStartRound();
+      }
+    });
+  }
 
   pageTabs.forEach(function (tab) {
     tab.addEventListener("click", function () {
@@ -1108,7 +1293,11 @@
   resize();
   eng.reset(titleSeed);
   layoutPlayfield();
+  applyStoredName();
   showScreen("title");
   syncMuteLabels();
+  refreshBoards(null).catch(function () {
+    renderBoard(titleBoard, [], null);
+  });
   requestAnimationFrame(tick);
 })();

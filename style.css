@@ -193,6 +193,8 @@ html, body {
   );
   pointer-events: auto;
   overflow: auto;
+  touch-action: auto;
+  -webkit-overflow-scrolling: touch;
 }
 
 .panel-title {
@@ -310,6 +312,135 @@ h2 {
 
 .btn:active { transform: translateY(1px); }
 
+.btn:disabled,
+.btn[disabled] {
+  opacity: 0.38;
+  cursor: default;
+  transform: none;
+}
+
+.btn:disabled:active,
+.btn[disabled]:active { transform: none; }
+
+.name-field {
+  display: block;
+  margin: 0 0 10px;
+  text-align: left;
+  touch-action: auto;
+}
+
+.name-label {
+  display: block;
+  margin: 0 0 5px 6px;
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 0.14em;
+  color: #3f5c3d;
+}
+
+#player-name {
+  appearance: none;
+  width: 100%;
+  min-height: 44px;
+  padding: 0 16px;
+  border: 1.5px solid #2c241c;
+  border-radius: 999px;
+  background: #f7f1e6;
+  color: #2c241c;
+  font: inherit;
+  font-size: 16px;
+  font-weight: 650;
+  letter-spacing: 0.04em;
+  touch-action: manipulation;
+  user-select: text;
+  -webkit-user-select: text;
+}
+
+#player-name:focus {
+  outline: 2px solid #3f5c3d;
+  outline-offset: 2px;
+}
+
+#player-name::placeholder { color: #8a7d6c; }
+
+.leaderboard {
+  margin: 8px 0 4px;
+  padding: 8px 10px 6px;
+  background: rgba(247, 241, 230, 0.9);
+  border: 1.5px solid #2c241c;
+  border-radius: 16px;
+  text-align: left;
+}
+
+.leaderboard h2 {
+  margin: 0 0 6px;
+  font-family: "Songti TC", "PMingLiU", "Noto Serif CJK HK", "Noto Serif CJK TC",
+    "Noto Serif TC", "STSong", serif;
+  font-size: 16px;
+  letter-spacing: 0.12em;
+  color: #2c241c;
+  text-align: center;
+  font-weight: 700;
+}
+
+.board-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  max-height: 32vh;
+  overflow: auto;
+  font-size: 13px;
+  touch-action: auto;
+}
+
+.board-list.is-empty {
+  text-align: center;
+  color: #5a4e40;
+  padding: 8px 0 6px;
+  font-weight: 650;
+}
+
+.board-list li {
+  display: grid;
+  grid-template-columns: 2em 1fr 3.4em;
+  gap: 6px;
+  align-items: baseline;
+  padding: 3px 6px;
+  border-radius: 8px;
+  font-variant-numeric: tabular-nums;
+}
+
+.board-list li.is-mine {
+  background: #efe0c4;
+  outline: 1.5px solid #2c241c;
+}
+
+.board-rank {
+  font-weight: 700;
+  color: #3f5c3d;
+}
+
+.board-name {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  color: #2c241c;
+}
+
+.board-score {
+  text-align: right;
+  font-weight: 700;
+  color: #2c241c;
+}
+
+.board-note {
+  margin: 0 0 8px;
+  font-size: 13px;
+  font-weight: 650;
+  color: #8a4a3a;
+  min-height: 1.2em;
+}
+
 .grade {
   margin: 6px 0 4px;
   font-family: "Songti TC", "PMingLiU", "Noto Serif CJK HK", "Noto Serif CJK TC",
@@ -410,6 +541,10 @@ h2 {
   .howto li + li { margin-top: 3px; }
   .btn { min-height: 40px; margin-bottom: 6px; font-size: 16px; }
   .btn.ghost { min-height: 34px; }
+  #player-name { min-height: 40px; }
+  .leaderboard { margin: 6px 0 2px; padding: 6px 8px 4px; }
+  .leaderboard h2 { font-size: 14px; margin-bottom: 4px; }
+  .board-list { max-height: 28vh; font-size: 12px; }
   .grade { font-size: clamp(24px, 5.5vw, 40px); }
   .result-inner { padding-top: calc(36px + env(safe-area-inset-top, 0px)); }
 }
@@ -420,6 +555,9 @@ h2 {
   .howto { padding: 6px 10px; margin-bottom: 6px; font-size: 11.5px; }
   .btn { min-height: 36px; margin-bottom: 5px; font-size: 15px; }
   .btn.ghost { min-height: 30px; font-size: 13px; }
+  .name-field { margin-bottom: 6px; }
+  #player-name { min-height: 36px; }
+  .board-list { max-height: 24vh; font-size: 11.5px; }
   .page-tab { min-width: 46px; min-height: 28px; font-size: 12px; }
   .page-arrow { width: 32px; min-width: 32px; min-height: 28px; }
 }

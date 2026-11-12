@@ -15,8 +15,8 @@ function test(name, fn) {
   console.log("ok  " + name);
 }
 
-test("title is 今日訓導檢查手機櫃", () => {
-  assert.equal(E.TITLE, "今日訓導檢查手機櫃");
+test("title is 蘇SIR：今日訓導檢查手機櫃", () => {
+  assert.equal(E.TITLE, "蘇SIR：今日訓導檢查手機櫃");
 });
 
 test("six forms of 10×16 = 160 lockers each", () => {

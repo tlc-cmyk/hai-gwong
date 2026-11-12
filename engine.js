@@ -11,7 +11,7 @@
 })(typeof globalThis !== "undefined" ? globalThis : this, function () {
   "use strict";
 
-  var TITLE = "今日訓導檢查手機櫃";
+  var TITLE = "蘇SIR：今日訓導檢查手機櫃";
   var FORMS = 6;
   var FORM_NAMES = ["中一", "中二", "中三", "中四", "中五", "中六"];
   var COLS = 10;

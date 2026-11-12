@@ -493,24 +493,6 @@ h2 {
   font-variant-numeric: tabular-nums;
 }
 
-.result-counts {
-  margin: 0 0 6px;
-  font-size: 14px;
-  font-weight: 650;
-  color: #3f5c3d;
-  letter-spacing: 0.04em;
-  font-variant-numeric: tabular-nums;
-}
-
-.result-list {
-  margin: 0 0 8px;
-  font-size: 12.5px;
-  line-height: 1.55;
-  color: #5a4e40;
-  text-align: left;
-  word-break: break-word;
-}
-
 .result-best {
   margin: 0 0 8px;
   font-size: 14px;

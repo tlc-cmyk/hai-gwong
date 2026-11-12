@@ -181,11 +181,6 @@
     return m + ":" + (r < 10 ? "0" : "") + r;
   }
 
-  function formatNums(ids) {
-    if (!ids || !ids.length) return "無";
-    return ids.map(function (id) { return E.lockerLabel(id); }).join("、");
-  }
-
   function syncMuteLabels() {
     var muted = Audio.isMuted();
     muteBtns.forEach(function (btn) {
@@ -448,13 +443,6 @@
     if (!r) return;
     document.getElementById("result-grade").textContent = r.grade;
     document.getElementById("result-score").textContent = "分數 " + r.score;
-    document.getElementById("result-counts").textContent =
-      "查中 " + r.correct + "　誤報 " + r.falseFlags + "　漏查 " + r.missed +
-      "　（共 " + E.EMPTY_COUNT + " 格違規）";
-    document.getElementById("result-list").innerHTML =
-      "查中：" + formatNums(r.hitIds) +
-      "<br>誤報：" + formatNums(r.falseIds) +
-      "<br>漏查：" + formatNums(r.missIds);
     var best = r.best || 0;
     var bestEl = document.getElementById("result-best");
     if (r.bestUpdated) bestEl.textContent = "自我最佳更新　" + best;

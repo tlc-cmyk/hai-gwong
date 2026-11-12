@@ -1033,7 +1033,7 @@
     ctx.rect(stage.x, stage.y, stage.w, stage.h);
     ctx.clip();
     ctx.translate(stage.x, stage.y);
-    if (screen === "title") drawTitleScene();
+    if (screen === "title" || screen === "result") drawTitleScene();
     else drawPlay();
     ctx.restore();
   }

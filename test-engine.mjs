@@ -117,6 +117,32 @@ test("phase durations are 60s then 20s and are shared across pages", () => {
   assert.equal(eng.phase, "result");
 });
 
+test("timeline progress covers 60s inspect then 20s select in one 80s line", () => {
+  const eng = new E.GameEngine({ seed: 3, play: { x: 0, y: 0, w: 640, h: 360 } });
+  assert.equal(eng.roundDuration(), 80);
+  assert.equal(eng.roundElapsed(), 0);
+  assert.equal(eng.timelineProgress(), 0);
+  eng.step(30);
+  assert.equal(eng.phase, "inspect");
+  assert.ok(Math.abs(eng.roundElapsed() - 30) < 1e-9);
+  assert.ok(Math.abs(eng.timelineProgress() - 30 / 80) < 1e-9);
+  eng.step(30);
+  assert.equal(eng.phase, "select");
+  assert.ok(Math.abs(eng.roundElapsed() - 60) < 1e-6);
+  assert.ok(Math.abs(eng.timelineProgress() - 0.75) < 1e-6);
+  eng.step(10);
+  assert.equal(eng.phase, "select");
+  assert.ok(Math.abs(eng.roundElapsed() - 70) < 1e-6);
+  assert.ok(Math.abs(eng.timelineProgress() - 70 / 80) < 1e-6);
+  eng.setForm(4);
+  assert.equal(eng.form, 4);
+  assert.ok(Math.abs(eng.timelineProgress() - 70 / 80) < 1e-6, "changing page does not reset the timeline");
+  eng.step(10);
+  assert.equal(eng.phase, "result");
+  assert.equal(eng.roundElapsed(), 80);
+  assert.equal(eng.timelineProgress(), 1);
+});
+
 test("swiping pages does not reset timers or reshuffle lockers mid-round", () => {
   const eng = new E.GameEngine({ seed: 77, play: { x: 0, y: 0, w: 640, h: 360 } });
   const empties = eng.round.emptyIds.slice();

@@ -619,6 +619,35 @@
     return left < 0 ? 0 : left;
   };
 
+  GameEngine.prototype.roundDuration = function () {
+    return PHASE1_SECONDS + PHASE2_SECONDS;
+  };
+
+  GameEngine.prototype.roundElapsed = function () {
+    if (this.phase === "inspect") {
+      var t1 = this.phaseTime;
+      if (t1 < 0) return 0;
+      return t1 > PHASE1_SECONDS ? PHASE1_SECONDS : t1;
+    }
+    if (this.phase === "select") {
+      var t2 = this.phaseTime;
+      if (t2 < 0) t2 = 0;
+      if (t2 > PHASE2_SECONDS) t2 = PHASE2_SECONDS;
+      return PHASE1_SECONDS + t2;
+    }
+    if (this.phase === "result") return PHASE1_SECONDS + PHASE2_SECONDS;
+    return 0;
+  };
+
+  GameEngine.prototype.timelineProgress = function () {
+    var dur = this.roundDuration();
+    if (!(dur > 0)) return 0;
+    var p = this.roundElapsed() / dur;
+    if (p < 0) return 0;
+    if (p > 1) return 1;
+    return p;
+  };
+
   GameEngine.prototype.enterSelect = function () {
     this.phase = "select";
     this.phaseTime = 0;

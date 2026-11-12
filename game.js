@@ -128,7 +128,7 @@
   }
 
   function hudOffset() {
-    return safe.top + 76;
+    return safe.top + 112;
   }
 
   function layoutPlayfield() {
@@ -173,13 +173,6 @@
       rotateHint.classList.toggle("hidden", portrait || screen !== "play");
     }
     syncStartEnabled();
-  }
-
-  function formatTime(sec) {
-    var s = Math.max(0, Math.ceil(sec - 1e-9));
-    var m = (s / 60) | 0;
-    var r = s % 60;
-    return m + ":" + (r < 10 ? "0" : "") + r;
   }
 
   function syncMuteLabels() {
@@ -443,16 +436,20 @@
 
   function refreshHud() {
     if (screen !== "play") return;
-    var phaseLabel = eng.phase === "inspect" ? "檢查" : "點選";
+    var inspect = eng.phase === "inspect";
+    var counting = inspect || eng.phase === "select";
+    var phaseLabel = inspect ? "60 秒檢查" : "20 秒揀選";
     var left = eng.remaining();
-    var clock = formatTime(left);
-    var labelEl = hudTime.querySelector(".hud-time-label");
+    var secs = Math.max(0, Math.ceil(left - 1e-9));
+    var progress = counting ? eng.timelineProgress() : 0;
     var valueEl = hudTime.querySelector(".hud-time-value");
-    if (labelEl) labelEl.textContent = phaseLabel;
-    if (valueEl) valueEl.textContent = clock;
-    else hudTime.textContent = phaseLabel + " " + clock;
-    hudTime.setAttribute("aria-label", phaseLabel + " " + clock);
-    var counting = eng.phase === "inspect" || eng.phase === "select";
+    if (valueEl) valueEl.textContent = String(secs);
+    hudTime.style.setProperty("--hud-progress", (progress * 100).toFixed(3) + "%");
+    hudTime.classList.toggle("is-inspect", inspect);
+    hudTime.classList.toggle("is-select", eng.phase === "select");
+    hudTime.classList.toggle("is-start", progress <= 0.08);
+    hudTime.classList.toggle("is-end", progress >= 0.92);
+    hudTime.setAttribute("aria-label", phaseLabel + "，剩餘 " + secs + " 秒");
     hudTime.classList.toggle("urgent", counting && left <= 10);
     hudTime.classList.toggle("critical", counting && left <= 5);
     var formName = E.FORM_NAMES[eng.form] || "";

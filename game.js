@@ -30,7 +30,8 @@
     document.getElementById("btn-mute-title"),
     document.getElementById("btn-mute-result"),
   ];
-  var nameInput = document.getElementById("player-name");
+  var classSelect = document.getElementById("player-class");
+  var numberSelect = document.getElementById("player-number");
   var titleBoard = document.getElementById("title-board");
   var resultBoard = document.getElementById("result-board");
   var resultBoardNote = document.getElementById("result-board-note");
@@ -229,8 +230,30 @@
     } catch (err) { /* ignore quota / private mode */ }
   }
 
+  function fillNameOptions() {
+    var i, opt, n;
+    if (classSelect && classSelect.options.length <= 1) {
+      for (i = 0; i < E.CLASS_CODES.length; i++) {
+        opt = document.createElement("option");
+        opt.value = E.CLASS_CODES[i];
+        opt.textContent = E.CLASS_CODES[i];
+        classSelect.appendChild(opt);
+      }
+    }
+    if (numberSelect && numberSelect.options.length <= 1) {
+      for (n = 1; n <= 40; n++) {
+        opt = document.createElement("option");
+        opt.value = String(n);
+        opt.textContent = String(n);
+        numberSelect.appendChild(opt);
+      }
+    }
+  }
+
   function currentName() {
-    return E.normalizePlayerName(nameInput ? nameInput.value : playerName);
+    var cls = classSelect ? classSelect.value : "";
+    var num = numberSelect ? numberSelect.value : "";
+    return E.formatPlayerName(cls, num) || "";
   }
 
   function syncStartEnabled() {
@@ -240,8 +263,16 @@
   }
 
   function applyStoredName() {
+    var parsed;
     playerName = readStoredName();
-    if (nameInput && playerName) nameInput.value = playerName;
+    parsed = E.parsePlayerName(playerName);
+    if (parsed) {
+      if (classSelect) classSelect.value = parsed.classCode;
+      if (numberSelect) numberSelect.value = String(parsed.number);
+      playerName = E.formatPlayerName(parsed.classCode, parsed.number);
+    } else {
+      playerName = "";
+    }
     syncStartEnabled();
   }
 
@@ -249,7 +280,6 @@
     var name = currentName();
     if (!E.isValidPlayerName(name)) return "";
     playerName = name;
-    if (nameInput && nameInput.value !== name) nameInput.value = name;
     writeStoredName(name);
     syncStartEnabled();
     return name;
@@ -1226,7 +1256,8 @@
     var name = commitPlayerName();
     if (!name) {
       syncStartEnabled();
-      if (nameInput) nameInput.focus();
+      if (classSelect && !classSelect.value) classSelect.focus();
+      else if (numberSelect) numberSelect.focus();
       return;
     }
     Audio.unlock();
@@ -1240,20 +1271,12 @@
     showScreen("title");
     refreshBoards(highlightRow).catch(function () { /* keep last board */ });
   });
-  if (nameInput) {
-    nameInput.addEventListener("input", syncStartEnabled);
-    nameInput.addEventListener("change", function () {
-      var name = currentName();
-      if (E.isValidPlayerName(name)) commitPlayerName();
-      else syncStartEnabled();
-    });
-    nameInput.addEventListener("keydown", function (ev) {
-      if (ev.key === "Enter") {
-        ev.preventDefault();
-        tryStartRound();
-      }
-    });
+  function onNamePickChange() {
+    if (E.isValidPlayerName(currentName())) commitPlayerName();
+    else syncStartEnabled();
   }
+  if (classSelect) classSelect.addEventListener("change", onNamePickChange);
+  if (numberSelect) numberSelect.addEventListener("change", onNamePickChange);
 
   pageTabs.forEach(function (tab) {
     tab.addEventListener("click", function () {
@@ -1291,6 +1314,7 @@
   resize();
   eng.reset(titleSeed);
   layoutPlayfield();
+  fillNameOptions();
   applyStoredName();
   showScreen("title");
   syncMuteLabels();

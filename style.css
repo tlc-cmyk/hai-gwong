@@ -374,30 +374,37 @@ h2 {
   color: #3f5c3d;
 }
 
-#player-name {
+.name-picks {
+  display: flex;
+  gap: 8px;
+}
+
+.name-picks select {
   appearance: none;
-  width: 100%;
+  -webkit-appearance: none;
+  flex: 1;
+  min-width: 0;
   min-height: 44px;
-  padding: 0 16px;
+  padding: 0 36px 0 16px;
   border: 1.5px solid #2c241c;
   border-radius: 999px;
-  background: #f7f1e6;
+  background-color: #f7f1e6;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8'%3E%3Cpath fill='none' stroke='%232c241c' stroke-width='1.6' stroke-linecap='round' stroke-linejoin='round' d='M1.5 1.5 L6 6 L10.5 1.5'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right 14px center;
+  background-size: 12px 8px;
   color: #2c241c;
   font: inherit;
   font-size: 16px;
   font-weight: 650;
   letter-spacing: 0.04em;
   touch-action: manipulation;
-  user-select: text;
-  -webkit-user-select: text;
 }
 
-#player-name:focus {
+.name-picks select:focus {
   outline: 2px solid #3f5c3d;
   outline-offset: 2px;
 }
-
-#player-name::placeholder { color: #8a7d6c; }
 
 .leaderboard {
   margin: 8px 0 4px;
@@ -612,7 +619,7 @@ h2 {
   .howto li + li { margin-top: 6px; }
   .btn { min-height: 40px; margin-bottom: 6px; font-size: 16px; }
   .btn.ghost { min-height: 34px; }
-  #player-name { min-height: 40px; }
+  .name-picks select { min-height: 40px; }
   .leaderboard { margin: 6px 0 2px; padding: 6px 8px 4px; }
   .leaderboard h2 { font-size: 14px; margin-bottom: 4px; }
   .board-list { max-height: 28vh; font-size: 12px; }
@@ -627,7 +634,7 @@ h2 {
   .btn { min-height: 36px; margin-bottom: 5px; font-size: 15px; }
   .btn.ghost { min-height: 30px; font-size: 13px; }
   .name-field { margin-bottom: 6px; }
-  #player-name { min-height: 36px; }
+  .name-picks select { min-height: 36px; }
   .board-list { max-height: 24vh; font-size: 11.5px; }
   .page-tab { max-width: 40px; min-height: 28px; font-size: 11px; }
   .page-arrow { width: 32px; min-width: 32px; min-height: 28px; }

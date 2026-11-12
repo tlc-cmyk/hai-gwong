@@ -406,22 +406,37 @@ test("beamFromPointer offsets the light above the finger", () => {
   assert.ok(Math.abs(beam.y - (200 - 50 * 0.72)) < 1e-9);
 });
 
-test("player name must be trimmed and 1 to 12 characters", () => {
+test("player name must be a class 1A–6D and a number 1–40", () => {
   assert.equal(E.PLAYER_NAME_MAX, 12);
   assert.equal(E.PLAYER_NAME_KEY, "hai-gwong-player-name");
-  assert.equal(E.normalizePlayerName("  小明  "), "小明");
+  assert.equal(E.CLASS_CODES.length, 24);
+  assert.equal(E.CLASS_CODES[0], "1A");
+  assert.equal(E.CLASS_CODES[23], "6D");
+  assert.equal(E.formatPlayerName("1A", 1), "1A01");
+  assert.equal(E.formatPlayerName("6d", 40), "6D40");
+  assert.equal(E.formatPlayerName("1E", 1), "");
+  assert.equal(E.formatPlayerName("1A", 0), "");
+  assert.equal(E.formatPlayerName("1A", 41), "");
+  assert.equal(E.normalizePlayerName("  1a7  "), "1A07");
+  assert.equal(E.normalizePlayerName("6D40"), "6D40");
   assert.equal(E.normalizePlayerName("   "), "");
   assert.equal(E.normalizePlayerName(null), "");
   assert.equal(E.normalizePlayerName(undefined), "");
+  assert.equal(E.normalizePlayerName("小明"), "小明");
   assert.equal(E.isValidPlayerName(""), false);
   assert.equal(E.isValidPlayerName("   "), false);
-  assert.equal(E.isValidPlayerName("\n\t"), false);
-  assert.equal(E.isValidPlayerName("A"), true);
-  assert.equal(E.isValidPlayerName("值班同學"), true);
-  assert.equal(E.isValidPlayerName("123456789012"), true);
-  assert.equal(E.isValidPlayerName("1234567890123"), false);
-  assert.equal(E.isValidPlayerName("  123456789012  "), true);
-  assert.equal(E.isValidPlayerName("  1234567890123  "), false);
+  assert.equal(E.isValidPlayerName("小明"), false);
+  assert.equal(E.isValidPlayerName("A"), false);
+  assert.equal(E.isValidPlayerName("1A"), false);
+  assert.equal(E.isValidPlayerName("1A00"), false);
+  assert.equal(E.isValidPlayerName("1A01"), true);
+  assert.equal(E.isValidPlayerName("1a1"), true);
+  assert.equal(E.isValidPlayerName("  1A40  "), true);
+  assert.equal(E.isValidPlayerName("1A41"), false);
+  assert.equal(E.isValidPlayerName("7A01"), false);
+  assert.equal(E.isValidPlayerName("1E01"), false);
+  assert.deepEqual(E.parsePlayerName("2C09"), { classCode: "2C", number: 9 });
+  assert.equal(E.parsePlayerName("值班同學"), null);
 });
 
 test("rankScores orders by score desc then earlier created_at and keeps top 20", () => {

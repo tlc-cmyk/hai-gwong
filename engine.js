@@ -660,15 +660,44 @@
 
   var PLAYER_NAME_KEY = "hai-gwong-player-name";
   var PLAYER_NAME_MAX = 12;
+  var CLASS_LETTERS = "ABCD";
+  var CLASS_CODES = [];
+  (function buildClassCodes() {
+    var f, i;
+    for (f = 1; f <= 6; f++) {
+      for (i = 0; i < CLASS_LETTERS.length; i++) {
+        CLASS_CODES.push(String(f) + CLASS_LETTERS.charAt(i));
+      }
+    }
+  })();
+
+  function formatPlayerName(classCode, number) {
+    var cls = String(classCode == null ? "" : classCode).toUpperCase();
+    var n = number | 0;
+    if (CLASS_CODES.indexOf(cls) < 0) return "";
+    if (n < 1 || n > 40) return "";
+    return cls + pad2(n);
+  }
 
   function normalizePlayerName(raw) {
     if (raw == null) return "";
-    return String(raw).replace(/^\s+|\s+$/g, "");
+    var trimmed = String(raw).replace(/^\s+|\s+$/g, "");
+    if (!trimmed) return "";
+    var compact = trimmed.toUpperCase().replace(/\s+/g, "");
+    var m = /^([1-6][A-D])(\d{1,2})$/.exec(compact);
+    if (!m) return trimmed;
+    return formatPlayerName(m[1], +m[2]) || trimmed;
   }
 
   function isValidPlayerName(raw) {
+    return /^[1-6][A-D](0[1-9]|[1-3][0-9]|40)$/.test(normalizePlayerName(raw));
+  }
+
+  function parsePlayerName(raw) {
     var name = normalizePlayerName(raw);
-    return name.length >= 1 && name.length <= PLAYER_NAME_MAX;
+    var m = /^([1-6][A-D])(\d{2})$/.exec(name);
+    if (!m || !isValidPlayerName(name)) return null;
+    return { classCode: m[1], number: +m[2] };
   }
 
   var LEADERBOARD_LIMIT = 20;
@@ -749,8 +778,11 @@
     GameEngine: GameEngine,
     PLAYER_NAME_KEY: PLAYER_NAME_KEY,
     PLAYER_NAME_MAX: PLAYER_NAME_MAX,
+    CLASS_CODES: CLASS_CODES,
+    formatPlayerName: formatPlayerName,
     normalizePlayerName: normalizePlayerName,
     isValidPlayerName: isValidPlayerName,
+    parsePlayerName: parsePlayerName,
     LEADERBOARD_LIMIT: LEADERBOARD_LIMIT,
     rankScores: rankScores,
     isSameScoreRow: isSameScoreRow,

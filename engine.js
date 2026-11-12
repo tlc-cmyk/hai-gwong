@@ -18,13 +18,12 @@
   var ROWS = 16;
   var LOCKER_COUNT = COLS * ROWS;
   var TOTAL_LOCKERS = LOCKER_COUNT * FORMS;
-  var EMPTY_PER_FORM = 4;
-  var EMPTY_COUNT = EMPTY_PER_FORM * FORMS;
+  var EMPTY_COUNT = 60;
   var PHASE1_SECONDS = 60;
   var PHASE2_SECONDS = 20;
   var POINTS_HIT = 100;
   var POINTS_FALSE = 25;
-  var BEST_KEY = "hai-gwong-best-v4";
+  var BEST_KEY = "hai-gwong-best-v5";
 
   var GRADES = {
     perfect: "火眼金睛",
@@ -36,7 +35,7 @@
   };
 
   var BLURBS = {
-    perfect: "二十四格全中，一格都冇點錯。今早嘅值日真係醒目。",
+    perfect: "六十格全中，一格都冇點錯。今早嘅值日真係醒目。",
     careful: "差不多睇晒，只係差少少。已經好穩陣。",
     pass: "有留心照過，記憶都唔差。再熟一次會更準。",
     missed: "有幾格冇交機嘅櫃漏咗。下次可以再慢慢掃多一輪。",
@@ -288,21 +287,59 @@
     return { x: px, y: py - r * 0.72, radius: r };
   }
 
+  /**
+   * 從全部櫃格抽出 EMPTY_COUNT 格空櫃，隨機分落各年級；
+   * 若抽完後有年級完全冇空櫃，就從空櫃最多嗰頁調一格過去。
+   */
+  function pickEmptyIds(rng) {
+    var picked = shufflePick(rng, EMPTY_COUNT, TOTAL_LOCKERS);
+    var counts = [];
+    var i, f, p;
+    for (f = 0; f < FORMS; f++) counts[f] = 0;
+    for (i = 0; i < picked.length; i++) counts[formOf(picked[i])]++;
+    var used = {};
+    for (i = 0; i < picked.length; i++) used[picked[i]] = 1;
+    for (f = 0; f < FORMS; f++) {
+      if (counts[f] > 0) continue;
+      var donor = 0;
+      for (i = 1; i < FORMS; i++) if (counts[i] > counts[donor]) donor = i;
+      var local = Math.floor(rng() * LOCKER_COUNT);
+      var neu = globalId(f, local);
+      var guard = 0;
+      while (used[neu] && guard++ < LOCKER_COUNT) {
+        local = (local + 1) % LOCKER_COUNT;
+        neu = globalId(f, local);
+      }
+      for (p = 0; p < picked.length; p++) {
+        if (formOf(picked[p]) === donor && counts[donor] > 1) {
+          used[picked[p]] = 0;
+          picked[p] = neu;
+          used[neu] = 1;
+          counts[donor]--;
+          counts[f]++;
+          break;
+        }
+      }
+    }
+    picked.sort(function (a, b) { return a - b; });
+    return picked;
+  }
+
   function createRound(seed) {
     var s = seed == null ? 1 : seed;
     var rng = mulberry32(typeof s === "number" ? s : hashString(String(s)));
-    var emptyIds = [];
+    var emptyIds = pickEmptyIds(rng);
+    var emptySet = {};
     var emptyIdsByForm = [];
     var lockers = [];
-    var f, i, k;
+    var f, i;
+    for (f = 0; f < FORMS; f++) emptyIdsByForm.push([]);
+    for (i = 0; i < emptyIds.length; i++) {
+      emptySet[emptyIds[i]] = 1;
+      emptyIdsByForm[formOf(emptyIds[i])].push(localOf(emptyIds[i]));
+    }
     for (f = 0; f < FORMS; f++) {
-      var localEmpties = shufflePick(rng, EMPTY_PER_FORM, LOCKER_COUNT);
-      emptyIdsByForm.push(localEmpties.slice());
-      var emptySet = {};
-      for (k = 0; k < localEmpties.length; k++) {
-        emptySet[localEmpties[k]] = 1;
-        emptyIds.push(globalId(f, localEmpties[k]));
-      }
+      emptyIdsByForm[f].sort(function (a, b) { return a - b; });
       var palette = PALETTES[f];
       for (i = 0; i < LOCKER_COUNT; i++) {
         lockers.push({
@@ -314,11 +351,10 @@
           col: i % COLS,
           row: (i / COLS) | 0,
           color: palette[i],
-          hasPhone: !emptySet[i],
+          hasPhone: !emptySet[globalId(f, i)],
         });
       }
     }
-    emptyIds.sort(function (a, b) { return a - b; });
     return {
       seed: s,
       emptyIds: emptyIds,
@@ -679,7 +715,6 @@
     ROWS: ROWS,
     LOCKER_COUNT: LOCKER_COUNT,
     TOTAL_LOCKERS: TOTAL_LOCKERS,
-    EMPTY_PER_FORM: EMPTY_PER_FORM,
     EMPTY_COUNT: EMPTY_COUNT,
     PHASE1_SECONDS: PHASE1_SECONDS,
     PHASE2_SECONDS: PHASE2_SECONDS,

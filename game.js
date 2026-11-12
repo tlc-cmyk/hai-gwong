@@ -581,7 +581,7 @@
     var w = play.w;
     if (h <= 8) return;
     var form = formIndex == null ? eng.form : formIndex;
-    var signLabel = (E.FORM_NAMES[form] || "") + "級 儲物櫃";
+    var signLabel = (E.FORM_NAMES[form] || "") + "級 手機櫃";
 
     ctx.fillStyle = lit ? wall : "#3a3228";
     ctx.fillRect(0, Math.max(0, y - 8), viewW, h + 10);

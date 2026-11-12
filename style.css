@@ -234,12 +234,7 @@ html, body {
   flex-direction: column;
   justify-content: space-between;
   align-items: center;
-  background: linear-gradient(
-    to top,
-    rgba(243, 234, 216, 0.98) 0%,
-    rgba(243, 234, 216, 0.94) 28%,
-    rgba(243, 234, 216, 0.0) 50%
-  );
+  background: #f3ead8;
   padding-top: calc(10px + env(safe-area-inset-top, 0px));
 }
 

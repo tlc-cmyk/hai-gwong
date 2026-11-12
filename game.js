@@ -976,17 +976,8 @@
   }
 
   function drawTitleScene() {
-    var liveRound = eng.round;
-    var livePhase = eng.phase;
-    var liveForm = eng.form;
-    eng.round = E.createRound(titleSeed);
-    eng.phase = "title";
-    eng.form = 0;
-    drawWorld("title", 0);
-    drawStickTeacher();
-    eng.round = liveRound;
-    eng.phase = livePhase;
-    eng.form = liveForm;
+    ctx.fillStyle = cream;
+    ctx.fillRect(0, 0, viewW, viewH);
   }
 
   function drawPlayWall(mode, form, ox) {

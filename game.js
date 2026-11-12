@@ -127,7 +127,7 @@
   }
 
   function hudOffset() {
-    return safe.top + 36;
+    return safe.top + 76;
   }
 
   function layoutPlayfield() {
@@ -420,8 +420,16 @@
     if (screen !== "play") return;
     var phaseLabel = eng.phase === "inspect" ? "檢查" : "點選";
     var left = eng.remaining();
-    hudTime.textContent = phaseLabel + " " + formatTime(left);
-    hudTime.classList.toggle("urgent", left <= 5 && (eng.phase === "inspect" || eng.phase === "select"));
+    var clock = formatTime(left);
+    var labelEl = hudTime.querySelector(".hud-time-label");
+    var valueEl = hudTime.querySelector(".hud-time-value");
+    if (labelEl) labelEl.textContent = phaseLabel;
+    if (valueEl) valueEl.textContent = clock;
+    else hudTime.textContent = phaseLabel + " " + clock;
+    hudTime.setAttribute("aria-label", phaseLabel + " " + clock);
+    var counting = eng.phase === "inspect" || eng.phase === "select";
+    hudTime.classList.toggle("urgent", counting && left <= 10);
+    hudTime.classList.toggle("critical", counting && left <= 5);
     var formName = E.FORM_NAMES[eng.form] || "";
     if (eng.phase === "inspect") {
       var visited = eng.visitedCount();

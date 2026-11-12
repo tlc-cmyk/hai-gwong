@@ -19,28 +19,28 @@ test("title is 今日訓導檢查手機櫃", () => {
   assert.equal(E.TITLE, "今日訓導檢查手機櫃");
 });
 
-test("four forms of 10×16 = 160 lockers each", () => {
-  assert.equal(E.FORMS, 4);
-  assert.deepEqual(E.FORM_NAMES, ["中一", "中二", "中三", "中四"]);
+test("six forms of 10×16 = 160 lockers each", () => {
+  assert.equal(E.FORMS, 6);
+  assert.deepEqual(E.FORM_NAMES, ["中一", "中二", "中三", "中四", "中五", "中六"]);
   assert.equal(E.COLS, 10);
   assert.equal(E.ROWS, 16);
   assert.equal(E.LOCKER_COUNT, 160);
-  assert.equal(E.TOTAL_LOCKERS, 640);
+  assert.equal(E.TOTAL_LOCKERS, 960);
   assert.equal(E.EMPTY_PER_FORM, 4);
-  assert.equal(E.EMPTY_COUNT, 16);
+  assert.equal(E.EMPTY_COUNT, 24);
 });
 
-test("each round has 4 empty lockers per form, 16 total, no overlap", () => {
+test("each round has 4 empty lockers per form, 24 total, no overlap", () => {
   for (const seed of [1, 2, 7, 99, 20261111]) {
     const round = E.createRound(seed);
-    assert.equal(round.lockers.length, 640);
-    assert.equal(round.emptyIds.length, 16);
-    assert.equal(new Set(round.emptyIds).size, 16, "duplicate empty ids");
-    assert.equal(round.emptyIdsByForm.length, 4);
+    assert.equal(round.lockers.length, 960);
+    assert.equal(round.emptyIds.length, 24);
+    assert.equal(new Set(round.emptyIds).size, 24, "duplicate empty ids");
+    assert.equal(round.emptyIdsByForm.length, 6);
     let phones = 0;
     let empties = 0;
     const emptySet = new Set(round.emptyIds);
-    for (let f = 0; f < 4; f++) {
+    for (let f = 0; f < 6; f++) {
       const local = round.emptyIdsByForm[f];
       assert.equal(local.length, 4, "form " + f + " empty count");
       assert.equal(new Set(local).size, 4);
@@ -55,8 +55,8 @@ test("each round has 4 empty lockers per form, 16 total, no overlap", () => {
       if (emptySet.has(locker.id)) assert.equal(locker.hasPhone, false);
       else assert.equal(locker.hasPhone, true);
     }
-    assert.equal(phones, 624);
-    assert.equal(empties, 16);
+    assert.equal(phones, 936);
+    assert.equal(empties, 24);
   }
 });
 
@@ -69,8 +69,8 @@ test("empty locker positions change with the seed and stay stable for the same s
 });
 
 test("locker colours are unique within each form wall", () => {
-  assert.equal(E.PALETTES.length, 4);
-  for (let f = 0; f < 4; f++) {
+  assert.equal(E.PALETTES.length, 6);
+  for (let f = 0; f < 6; f++) {
     const palette = E.PALETTES[f];
     assert.equal(palette.length, 160);
     const set = new Set(palette);
@@ -232,69 +232,85 @@ test("cannot toggle in phase 1; toggle and untap work in phase 2 across forms", 
   assert.deepEqual(eng.selectedIds(), [a, b].sort((x, y) => x - y));
 });
 
-test("scoring: perfect flags of all 16 with no extras is the top grade", () => {
-  const empties = [2, 15, 28, 40, 121, 133, 150, 170, 241, 260, 280, 300, 361, 380, 400, 470];
+test("scoring: perfect flags of all 24 with no extras is the top grade", () => {
+  const empties = [
+    2, 15, 28, 40, 121, 133, 150, 170,
+    241, 260, 280, 300, 361, 380, 400, 470,
+    500, 520, 540, 600, 650, 700, 820, 900,
+  ];
   const result = E.scoreSelection(empties, empties);
-  assert.equal(result.correct, 16);
+  assert.equal(result.correct, 24);
   assert.equal(result.falseFlags, 0);
   assert.equal(result.missed, 0);
-  assert.equal(result.score, 1600);
+  assert.equal(result.score, 2400);
   assert.equal(result.grade, "火眼金睛");
-  assert.equal(E.gradeOf(16, 0), "perfect");
+  assert.equal(E.gradeOf(24, 0), "perfect");
 });
 
 test("scoring: flagging none is 0 and the lowest grade", () => {
-  const empties = [1, 2, 3, 4, 121, 122, 123, 124, 241, 242, 243, 244, 361, 362, 363, 364];
+  const empties = [
+    1, 2, 3, 4, 121, 122, 123, 124,
+    241, 242, 243, 244, 361, 362, 363, 364,
+    481, 482, 483, 484, 641, 642, 643, 644,
+  ];
   const result = E.scoreSelection([], empties);
   assert.equal(result.correct, 0);
   assert.equal(result.falseFlags, 0);
-  assert.equal(result.missed, 16);
+  assert.equal(result.missed, 24);
   assert.equal(result.score, 0);
   assert.equal(result.grade, "要再練");
   assert.equal(E.gradeOf(0, 0), "practice");
 });
 
 test("scoring: false flags are counted and penalised", () => {
-  const empties = [1, 2, 3, 4, 121, 122, 123, 124, 241, 242, 243, 244, 361, 362, 363, 364];
-  // 12 hits, 4 misses, 2 false
+  const empties = [
+    1, 2, 3, 4, 121, 122, 123, 124,
+    241, 242, 243, 244, 361, 362, 363, 364,
+    481, 482, 483, 484, 641, 642, 643, 644,
+  ];
+  // 18 hits, 6 misses, 2 false
   const result = E.scoreSelection(
-    [1, 2, 3, 4, 121, 122, 123, 124, 241, 242, 243, 244, 50, 200],
+    [
+      1, 2, 3, 4, 121, 122, 123, 124,
+      241, 242, 243, 244, 361, 362, 363, 364,
+      481, 482, 50, 200,
+    ],
     empties
   );
-  assert.equal(result.correct, 12);
+  assert.equal(result.correct, 18);
   assert.equal(result.falseFlags, 2);
-  assert.equal(result.missed, 4);
-  assert.equal(result.score, 12 * 100 - 2 * 25);
+  assert.equal(result.missed, 6);
+  assert.equal(result.score, 18 * 100 - 2 * 25);
   assert.equal(result.grade, "細心值日");
   assert.deepEqual(result.falseIds, [50, 200]);
-  assert.deepEqual(result.missIds, [361, 362, 363, 364]);
+  assert.deepEqual(result.missIds, [483, 484, 641, 642, 643, 644]);
 });
 
-test("grade bands cover careful, pass, missed and wild for the 16-empty totals", () => {
-  assert.equal(E.GRADES[E.gradeOf(15, 0)], "細心值日");
-  assert.equal(E.GRADES[E.gradeOf(12, 2)], "細心值日");
-  assert.equal(E.GRADES[E.gradeOf(16, 2)], "細心值日");
-  assert.equal(E.GRADES[E.gradeOf(16, 1)], "細心值日");
-  assert.equal(E.GRADES[E.gradeOf(10, 4)], "合格");
-  assert.equal(E.GRADES[E.gradeOf(8, 0)], "合格");
-  assert.equal(E.GRADES[E.gradeOf(8, 2)], "合格");
-  assert.equal(E.GRADES[E.gradeOf(11, 3)], "合格");
-  assert.equal(E.GRADES[E.gradeOf(6, 1)], "漏咗幾格");
-  assert.equal(E.GRADES[E.gradeOf(7, 6)], "漏咗幾格");
-  assert.equal(E.GRADES[E.gradeOf(2, 9)], "亂點");
-  assert.equal(E.GRADES[E.gradeOf(0, 16)], "亂點");
-  assert.equal(E.GRADES[E.gradeOf(5, 0)], "要再練");
-  assert.equal(E.GRADES[E.gradeOf(4, 2)], "要再練");
+test("grade bands cover careful, pass, missed and wild for the 24-empty totals", () => {
+  assert.equal(E.GRADES[E.gradeOf(23, 0)], "細心值日");
+  assert.equal(E.GRADES[E.gradeOf(18, 2)], "細心值日");
+  assert.equal(E.GRADES[E.gradeOf(24, 2)], "細心值日");
+  assert.equal(E.GRADES[E.gradeOf(24, 1)], "細心值日");
+  assert.equal(E.GRADES[E.gradeOf(15, 4)], "合格");
+  assert.equal(E.GRADES[E.gradeOf(12, 0)], "合格");
+  assert.equal(E.GRADES[E.gradeOf(12, 2)], "合格");
+  assert.equal(E.GRADES[E.gradeOf(16, 3)], "合格");
+  assert.equal(E.GRADES[E.gradeOf(9, 1)], "漏咗幾格");
+  assert.equal(E.GRADES[E.gradeOf(10, 6)], "漏咗幾格");
+  assert.equal(E.GRADES[E.gradeOf(2, 13)], "亂點");
+  assert.equal(E.GRADES[E.gradeOf(0, 24)], "亂點");
+  assert.equal(E.GRADES[E.gradeOf(8, 0)], "要再練");
+  assert.equal(E.GRADES[E.gradeOf(5, 2)], "要再練");
 });
 
 test("scan-and-memory bot that inspects all empties on all forms then flags them scores top", () => {
   const eng = new E.GameEngine({ seed: 2026, play: { x: 10, y: 20, w: 640, h: 360 } });
   const radius = E.suggestedBeamRadius(eng.layout.cellW, eng.layout.cellH);
   const empties = eng.round.emptyIds.slice();
-  assert.equal(empties.length, 16);
-  const perForm = [0, 0, 0, 0];
+  assert.equal(empties.length, 24);
+  const perForm = [0, 0, 0, 0, 0, 0];
   for (const id of empties) perForm[E.formOf(id)]++;
-  assert.deepEqual(perForm, [4, 4, 4, 4]);
+  assert.deepEqual(perForm, [4, 4, 4, 4, 4, 4]);
 
   // Sweep every empty locker on every form with the torch and confirm the peek.
   for (const id of empties) {
@@ -329,10 +345,10 @@ test("scan-and-memory bot that inspects all empties on all forms then flags them
 
   eng.step(E.PHASE2_SECONDS + 0.01);
   assert.equal(eng.phase, "result");
-  assert.equal(eng.result.correct, 16);
+  assert.equal(eng.result.correct, 24);
   assert.equal(eng.result.falseFlags, 0);
   assert.equal(eng.result.missed, 0);
-  assert.equal(eng.result.score, 1600);
+  assert.equal(eng.result.score, 2400);
   assert.equal(eng.result.grade, "火眼金睛");
 });
 
@@ -345,7 +361,7 @@ test("hit-testing finds the locker under a point on the current form", () => {
   assert.equal(eng.hitTest(-10, -10), -1);
 });
 
-test("lockerCode and lockerLabel follow 1A01–4D40 from the top", () => {
+test("lockerCode and lockerLabel follow 1A01–6D40 from the top", () => {
   // First and last of each letter group on 中一
   assert.equal(E.lockerCode(0, 0), "1A01");
   assert.equal(E.lockerCode(0, 9), "1A10");
@@ -364,23 +380,32 @@ test("lockerCode and lockerLabel follow 1A01–4D40 from the top", () => {
   assert.equal(E.lockerCode(2, 159), "3D40");
   assert.equal(E.lockerCode(3, 0), "4A01");
   assert.equal(E.lockerCode(3, 159), "4D40");
+  assert.equal(E.lockerCode(4, 0), "5A01");
+  assert.equal(E.lockerCode(4, 159), "5D40");
+  assert.equal(E.lockerCode(5, 0), "6A01");
+  assert.equal(E.lockerCode(5, 159), "6D40");
   assert.equal(E.lockerCode(1, 56), "2B17");
   assert.equal(E.lockerCode(2, 96), "3C17");
+  assert.equal(E.lockerCode(4, 56), "5B17");
+  assert.equal(E.lockerCode(5, 96), "6C17");
 
   // lockerLabel(formIndex, lockerIndex)
   assert.equal(E.lockerLabel(0, 0), "中一 1A01");
   assert.equal(E.lockerLabel(1, 56), "中二 2B17");
   assert.equal(E.lockerLabel(2, 80), "中三 3C01");
   assert.equal(E.lockerLabel(3, 159), "中四 4D40");
+  assert.equal(E.lockerLabel(4, 0), "中五 5A01");
+  assert.equal(E.lockerLabel(5, 159), "中六 6D40");
 
   // lockerLabel(globalId) still works for result lists
   assert.equal(E.lockerLabel(0), "中一 1A01");
   assert.equal(E.lockerLabel(E.globalId(1, 56)), "中二 2B17");
   assert.equal(E.lockerLabel(E.globalId(3, 0)), "中四 4A01");
+  assert.equal(E.lockerLabel(E.globalId(5, 0)), "中六 6A01");
 });
 
-test("best-score key is v3 so old 120-locker scores are not reused", () => {
-  assert.equal(E.BEST_KEY, "hai-gwong-best-v3");
+test("best-score key is v4 so old four-form scores are not reused", () => {
+  assert.equal(E.BEST_KEY, "hai-gwong-best-v4");
 });
 
 test("beamFromPointer offsets the light above the finger", () => {
@@ -411,8 +436,8 @@ test("player name must be trimmed and 1 to 12 characters", () => {
 
 test("rankScores orders by score desc then earlier created_at and keeps top 20", () => {
   const rows = [
-    { player_name: "晚到", score: 1600, created_at: "2026-11-12T03:00:00.000Z" },
-    { player_name: "早到", score: 1600, created_at: "2026-11-12T01:00:00.000Z" },
+    { player_name: "晚到", score: 2400, created_at: "2026-11-12T03:00:00.000Z" },
+    { player_name: "早到", score: 2400, created_at: "2026-11-12T01:00:00.000Z" },
     { player_name: "中游", score: 800, created_at: "2026-11-12T02:00:00.000Z" },
     { player_name: "低分甲", score: 100, created_at: "2026-11-12T04:00:00.000Z" },
     { player_name: "低分乙", score: 100, created_at: "2026-11-12T03:30:00.000Z" },
@@ -435,7 +460,7 @@ test("rankScores orders by score desc then earlier created_at and keeps top 20",
   assert.equal(ranked[19].score, 36);
   assert.equal(E.isSameScoreRow(ranked[0], {
     player_name: "早到",
-    score: 1600,
+    score: 2400,
     created_at: "2026-11-12T01:00:00.000Z",
   }), true);
   assert.equal(E.isSameScoreRow(ranked[0], ranked[1]), false);

@@ -162,8 +162,8 @@ html, body {
   display: flex;
   align-items: center;
   justify-content: center;
-  gap: 6px;
-  padding: 0 10px calc(8px + env(safe-area-inset-bottom, 0px));
+  gap: 4px;
+  padding: 0 8px calc(8px + env(safe-area-inset-bottom, 0px));
   pointer-events: none;
 }
 
@@ -190,9 +190,12 @@ html, body {
 }
 
 .page-tab {
-  min-width: 52px;
-  padding: 0 10px;
-  font-size: 13px;
+  flex: 1 1 0;
+  min-width: 0;
+  max-width: 48px;
+  padding: 0 2px;
+  font-size: 12px;
+  letter-spacing: 0.02em;
 }
 
 .page-tab.is-active {
@@ -643,6 +646,6 @@ h2 {
   .name-field { margin-bottom: 6px; }
   #player-name { min-height: 36px; }
   .board-list { max-height: 24vh; font-size: 11.5px; }
-  .page-tab { min-width: 46px; min-height: 28px; font-size: 12px; }
+  .page-tab { max-width: 40px; min-height: 28px; font-size: 11px; }
   .page-arrow { width: 32px; min-width: 32px; min-height: 28px; }
 }

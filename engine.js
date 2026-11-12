@@ -12,8 +12,8 @@
   "use strict";
 
   var TITLE = "今日訓導檢查手機櫃";
-  var FORMS = 4;
-  var FORM_NAMES = ["中一", "中二", "中三", "中四"];
+  var FORMS = 6;
+  var FORM_NAMES = ["中一", "中二", "中三", "中四", "中五", "中六"];
   var COLS = 10;
   var ROWS = 16;
   var LOCKER_COUNT = COLS * ROWS;
@@ -24,7 +24,7 @@
   var PHASE2_SECONDS = 20;
   var POINTS_HIT = 100;
   var POINTS_FALSE = 25;
-  var BEST_KEY = "hai-gwong-best-v3";
+  var BEST_KEY = "hai-gwong-best-v4";
 
   var GRADES = {
     perfect: "火眼金睛",
@@ -36,7 +36,7 @@
   };
 
   var BLURBS = {
-    perfect: "十六格全中，一格都冇點錯。今早嘅值日真係醒目。",
+    perfect: "二十四格全中，一格都冇點錯。今早嘅值日真係醒目。",
     careful: "差不多睇晒，只係差少少。已經好穩陣。",
     pass: "有留心照過，記憶都唔差。再熟一次會更準。",
     missed: "有幾格冇交機嘅櫃漏咗。下次可以再慢慢掃多一輪。",
@@ -68,7 +68,7 @@
   }
 
   /**
-   * 櫃號：年級數字 + 組別字母 + 兩位序號，例如 1A01、2C17、4D40。
+   * 櫃號：年級數字 + 組別字母 + 兩位序號，例如 1A01、2C17、6D40。
    * 由頂上開始，每 4 行一組（A–D），每組 40 格，由左至右、由上至下。
    */
   function lockerCode(form, localId) {
@@ -344,10 +344,11 @@
 
   function gradeOf(correct, falseFlags) {
     if (correct === EMPTY_COUNT && falseFlags === 0) return "perfect";
-    if (falseFlags >= 8 && falseFlags > correct) return "wild";
-    if (correct >= 12 && falseFlags <= 2) return "careful";
-    if ((correct >= 10 && falseFlags <= 4) || (correct >= 8 && falseFlags <= 2)) return "pass";
-    if (correct >= 6 && falseFlags <= 6) return "missed";
+    if (falseFlags >= Math.round(EMPTY_COUNT * 8 / 16) && falseFlags > correct) return "wild";
+    if (correct >= Math.round(EMPTY_COUNT * 12 / 16) && falseFlags <= 2) return "careful";
+    if ((correct >= Math.round(EMPTY_COUNT * 10 / 16) && falseFlags <= 4) ||
+        (correct >= Math.round(EMPTY_COUNT * 8 / 16) && falseFlags <= 2)) return "pass";
+    if (correct >= Math.round(EMPTY_COUNT * 6 / 16) && falseFlags <= 6) return "missed";
     return "practice";
   }
 

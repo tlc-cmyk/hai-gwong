@@ -1,7 +1,7 @@
 /**
  * 今日訓導檢查手機櫃 — 畫面、操作同遊戲循環。
  * 美術為原創扁平描邊校園風，並非複製其他遊戲嘅角色或場景。
- * 以手機直立為主；橫置時會提示「請將裝置直立」。櫃裏面嘅電話打橫擺。
+ * 以手機或 iPad 打直為主；一開始就提示「請將 iPad 或手機打直」。櫃裏面嘅電話打橫擺。
  */
 (function () {
   "use strict";
@@ -166,7 +166,12 @@
   }
 
   function updateRotateHint() {
-    rotateHint.classList.toggle("hidden", stage.portrait);
+    var portrait = !!stage.portrait;
+    app.classList.toggle("is-landscape", !portrait);
+    if (rotateHint) {
+      rotateHint.classList.toggle("hidden", portrait || screen !== "play");
+    }
+    syncStartEnabled();
   }
 
   function formatTime(sec) {
@@ -234,7 +239,7 @@
   }
 
   function syncStartEnabled() {
-    var ok = E.isValidPlayerName(currentName());
+    var ok = E.isValidPlayerName(currentName()) && !!stage.portrait;
     if (btnStart) btnStart.disabled = !ok;
     return ok;
   }
@@ -286,12 +291,12 @@
 
   function fetchTop10() {
     var url = BOARD_URL +
-      "?select=player_name,score,created_at&order=score.desc,created_at.asc&limit=10";
+      "?select=player_name,score,created_at&order=score.desc,created_at.asc&limit=20";
     return fetch(url, { headers: boardHeaders(false) }).then(function (res) {
       if (!res.ok) throw new Error("board " + res.status);
       return res.json();
     }).then(function (rows) {
-      return E.rankScores(rows, 10);
+      return E.rankScores(rows, E.LEADERBOARD_LIMIT);
     });
   }
 
@@ -360,6 +365,7 @@
     screen = name;
     app.classList.toggle("is-title", name === "title");
     app.classList.toggle("is-result", name === "result");
+    app.classList.toggle("is-play", name === "play");
     screenTitle.classList.toggle("hidden", name !== "title");
     screenResult.classList.toggle("hidden", name !== "result");
     hud.classList.toggle("hidden", name !== "play");
@@ -367,6 +373,7 @@
     layoutPlayfield();
     layoutChrome();
     syncPageNav();
+    updateRotateHint();
   }
 
   function goForm(index, animate) {
@@ -1225,6 +1232,10 @@
   });
 
   function tryStartRound() {
+    if (!stage.portrait) {
+      updateRotateHint();
+      return;
+    }
     var name = commitPlayerName();
     if (!name) {
       syncStartEnabled();

@@ -387,7 +387,7 @@ h2 {
   list-style: none;
   margin: 0;
   padding: 0;
-  max-height: 32vh;
+  max-height: 38vh;
   overflow: auto;
   font-size: 13px;
   touch-action: auto;
@@ -494,6 +494,22 @@ h2 {
 
 .hidden { display: none !important; }
 
+.upright-reminder {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  margin: 4px 0 2px;
+  padding: 8px 18px;
+  border: 1.5px solid #2c241c;
+  border-radius: 999px;
+  background: #efe0c4;
+  color: #2c241c;
+  font-size: 16px;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  line-height: 1.35;
+}
+
 .rotate-hint {
   position: absolute;
   top: 0;
@@ -513,7 +529,43 @@ h2 {
   pointer-events: none;
 }
 
-/* 直立為主；標題較長，要收細字級。橫置時由 JS 顯示「請將裝置直立」。 */
+.rotate-gate {
+  display: none;
+  position: absolute;
+  inset: 0;
+  z-index: 8;
+  align-items: center;
+  justify-content: center;
+  padding: calc(24px + env(safe-area-inset-top, 0px)) 24px calc(24px + env(safe-area-inset-bottom, 0px));
+  background: #f3ead8;
+  color: #2c241c;
+  text-align: center;
+  pointer-events: auto;
+}
+
+.rotate-gate p {
+  margin: 0;
+  max-width: 22em;
+  padding: 22px 26px;
+  border: 1.5px solid #2c241c;
+  border-radius: 16px;
+  background: #f7f1e6;
+  font-family: "Songti TC", "PMingLiU", "Noto Serif CJK HK", "Noto Serif CJK TC",
+    "Noto Serif TC", "STSong", serif;
+  font-size: clamp(22px, 6vw, 36px);
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  line-height: 1.4;
+}
+
+/* 橫置時（標題／結果）即時遮住畫面，未等 JS 亦可見。遊戲中只保留頂部提示。 */
+@media (orientation: landscape) {
+  #app:not(.is-play) .rotate-gate { display: flex; }
+}
+
+#app.is-landscape:not(.is-play) .rotate-gate { display: flex; }
+
+/* 直立為主；標題較長，要收細字級。橫置時顯示打直提示。 */
 @media (orientation: portrait) {
   h1 {
     font-size: clamp(22px, 6.2vw, 36px);
@@ -532,6 +584,7 @@ h2 {
     letter-spacing: 0.05em;
   }
   .subtitle { margin: 2px 0 6px; font-size: 13px; }
+  .upright-reminder { margin-top: 2px; padding: 6px 14px; font-size: 14px; }
   .howto {
     font-size: 12px;
     padding: 7px 12px;

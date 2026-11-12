@@ -634,8 +634,10 @@
     return name.length >= 1 && name.length <= PLAYER_NAME_MAX;
   }
 
+  var LEADERBOARD_LIMIT = 20;
+
   /**
-   * 排名：分數高者在前，同分以較早 created_at 優先，最多 10 名。
+   * 排名：分數高者在前，同分以較早 created_at 優先，最多 20 名。
    */
   function rankScores(rows, limit) {
     var list = (rows || []).slice();
@@ -649,7 +651,7 @@
       if (ta > tb) return 1;
       return 0;
     });
-    var cap = limit == null ? 10 : limit;
+    var cap = limit == null ? LEADERBOARD_LIMIT : limit;
     if (cap < 0) cap = 0;
     return list.slice(0, cap).map(function (row, i) {
       return {
@@ -713,6 +715,7 @@
     PLAYER_NAME_MAX: PLAYER_NAME_MAX,
     normalizePlayerName: normalizePlayerName,
     isValidPlayerName: isValidPlayerName,
+    LEADERBOARD_LIMIT: LEADERBOARD_LIMIT,
     rankScores: rankScores,
     isSameScoreRow: isSameScoreRow,
   };
